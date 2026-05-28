@@ -199,6 +199,106 @@ app.post('/api/state', (req, res) => {
   }
 });
 
+// Saarthi AI generation API
+app.post('/api/saarthi/generate', async (req, res) => {
+  try {
+    const { prompt, days, subject, apiKey } = req.body;
+    if (!prompt || !days || !subject) {
+      return res.status(400).json({ error: 'Prompt, days, and subject are required.' });
+    }
+
+    const targetDays = parseInt(days) || 10;
+    const finalApiKey = apiKey || process.env.GEMINI_API_KEY;
+
+    if (finalApiKey) {
+      // Call Google Gemini API
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${finalApiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `You are Saarthi, a friendly syllabus planner assistant.
+                  Take this subject: "${subject}"
+                  Syllabus details/User goals: "${prompt}"
+                  Target days: ${targetDays}
+
+                  Split the syllabus into exactly ${targetDays} day-by-day learning plans.
+                  For each day, provide:
+                  - topic: A specific subtopic to learn.
+                  - hours: Study hours required (between 1 and 4).
+                  - subtasks: A list of 3 checklist task strings. Detail the study goals, video lectures references, and practice QA problems.
+                    Example checklist tasks:
+                    1. "Watch YouTube lecture on ${subject} fundamentals"
+                    2. "Read MIT OCW study guide notes"
+                    3. "Solve 3 practice coding questions on LeetCode"
+
+                  Output ONLY a valid JSON object matching this structure:
+                  {
+                    "plans": [
+                      {
+                        "day": 1,
+                        "subject": "${subject}",
+                        "topic": "Topic Name",
+                        "hours": 2,
+                        "subtasks": ["Checklist item 1", "Checklist item 2", "Checklist item 3"]
+                      }
+                    ]
+                  }
+                  Ensure you return ONLY raw JSON matching this structure. Do not wrap in markdown or block backticks.`
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error?.message || 'Gemini API call failed');
+      }
+
+      const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (generatedText) {
+        return res.json(JSON.parse(generatedText));
+      }
+    }
+
+    // Heuristic Local Fallback if no API key is present
+    const topics = prompt.split(/[,;\n]+/).map(t => t.trim()).filter(t => t.length > 0);
+    const mockPlans = [];
+    const subjectsList = topics.length > 0 ? topics : ['Core concepts', 'Practical implementation', 'Revision and Mock Q&A'];
+
+    for (let i = 0; i < targetDays; i++) {
+      const topicIndex = i % subjectsList.length;
+      const currentTopic = subjectsList[topicIndex];
+      
+      mockPlans.push({
+        day: i + 1,
+        subject: subject,
+        topic: `Day ${i + 1}: ${currentTopic}`,
+        hours: Math.floor(Math.random() * 2) + 2, // 2-3 hours
+        subtasks: [
+          `Watch YouTube - ${currentTopic} Guide`,
+          `Read notes/PDFs on Github for ${currentTopic}`,
+          `Complete practice Q/A on GeeksforGeeks for ${currentTopic}`
+        ]
+      });
+    }
+
+    res.json({ plans: mockPlans });
+
+  } catch (err) {
+    console.error('Saarthi generation error:', err);
+    res.status(500).json({ error: err.message || 'Failed to generate study roadmap.' });
+  }
+});
+
 // Fallback to index.html for SPA routes
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));

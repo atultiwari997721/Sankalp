@@ -83,6 +83,7 @@ window.Sankalp = {
     if (window.SankalpJournal) window.SankalpJournal.init();
     if (window.SankalpZen) window.SankalpZen.init();
     if (window.SankalpStudy) window.SankalpStudy.init();
+    if (window.SankalpSaarthi) window.SankalpSaarthi.init();
 
     // 7. Initialize Auth state
     if (window.SankalpAuth) window.SankalpAuth.init();
@@ -151,6 +152,8 @@ window.Sankalp = {
         window.SankalpJournal.render();
       } else if (viewName === 'study' && window.SankalpStudy) {
         window.SankalpStudy.render();
+      } else if (viewName === 'saarthi' && window.SankalpSaarthi) {
+        window.SankalpSaarthi.renderRoadmapPreview();
       }
     }
   },
