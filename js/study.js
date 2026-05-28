@@ -126,6 +126,7 @@ window.SankalpStudy = {
     if (!gridEl) return;
     gridEl.innerHTML = '';
 
+    if (!window.Sankalp.state) return;
     const plans = window.Sankalp.state.studyPlans || [];
 
     // Sort chronologically by date
@@ -272,6 +273,7 @@ window.SankalpStudy = {
     if (!dashboardContainer) return;
 
     dashboardContainer.innerHTML = '';
+    if (!window.Sankalp.state) return;
     const plans = window.Sankalp.state.studyPlans || [];
     const todayStr = new Date().toISOString().split('T')[0];
 

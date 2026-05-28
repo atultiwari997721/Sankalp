@@ -154,6 +154,7 @@ window.SankalpTasks = {
     if (!gridEl) return;
     gridEl.innerHTML = '';
 
+    if (!window.Sankalp.state) return;
     let filtered = window.Sankalp.state.tasks || [];
 
     // Filter categories

@@ -92,6 +92,7 @@ window.SankalpHabits = {
     if (!listEl) return;
     listEl.innerHTML = '';
 
+    if (!window.Sankalp.state) return;
     const habits = window.Sankalp.state.habits || [];
 
     if (habits.length === 0) {

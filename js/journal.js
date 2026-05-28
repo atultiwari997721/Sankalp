@@ -17,6 +17,7 @@ window.SankalpJournal = {
   render() {
     const todayStr = new Date().toISOString().split('T')[0];
     const state = window.Sankalp.state;
+    if (!state) return;
     const entry = state.journal[todayStr] || { mood: '', morning: '', evening: '' };
 
     // Format current date

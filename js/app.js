@@ -60,34 +60,23 @@ window.Sankalp = {
 
   // Initialize Application
   async init() {
-    // 1. Initialize Auth
-    if (window.SankalpAuth) window.SankalpAuth.init();
-    
-    // 2. Setup Mobile Sidebar drawer triggers
+    // 1. Setup Mobile Sidebar drawer triggers (always available)
     this.setupMobileSidebar();
     
-    const username = localStorage.getItem('sankalp_user');
-    if (!username) {
-      // Hold initialization until user logs in successfully
-      return;
-    }
-
-    // 3. Fetch user state
-    await this.fetchState();
-    
-    // 4. Setup theme
+    // 2. Setup theme switcher (guarded for null states)
     this.setupTheme();
     
-    // 5. Setup Navigation & Routing
+    // 3. Setup Navigation & Routing (guarded)
     this.setupRouter();
     
-    // 6. Setup Dynamic Mouse Spotlight for Cards
+    // 4. Setup Dynamic Mouse Spotlight for Cards
     this.setupCardSpotlight();
     
-    // 7. Setup Greeting Editable Name
-    this.setupEditableGreeting();
+    // 5. Initialize Clock updates immediately on load
+    this.updateClock();
+    setInterval(() => this.updateClock(), 1000);
 
-    // 8. Initialize specific modules
+    // 6. Initialize sub-module listeners (safe to do before loading data)
     if (window.SankalpTasks) window.SankalpTasks.init();
     if (window.SankalpTimer) window.SankalpTimer.init();
     if (window.SankalpHabits) window.SankalpHabits.init();
@@ -95,10 +84,19 @@ window.Sankalp = {
     if (window.SankalpZen) window.SankalpZen.init();
     if (window.SankalpStudy) window.SankalpStudy.init();
 
-    // 9. Render initial dashboard
+    // 7. Initialize Auth state
+    if (window.SankalpAuth) window.SankalpAuth.init();
+    
+    const username = localStorage.getItem('sankalp_user');
+    if (!username) {
+      // Hold state-dependent rendering until user logs in successfully
+      return;
+    }
+
+    // 8. Fetch user specific state and render
+    await this.fetchState();
+    this.setupEditableGreeting();
     this.renderDashboard();
-    this.updateClock();
-    setInterval(() => this.updateClock(), 1000);
     
     this.showToast(`⚡ Welcome, ${username}! Let's make today productive.`, 'success');
   },
@@ -107,7 +105,6 @@ window.Sankalp = {
   setupRouter() {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
-      // Skip the logout button click from swapping views
       if (link.id === 'sidebar-logout-btn') return;
 
       link.addEventListener('click', (e) => {
@@ -117,7 +114,7 @@ window.Sankalp = {
       });
     });
 
-    // Handle initial route or defaults
+    // Handle initial default route
     this.switchView('dashboard');
   },
 
@@ -142,34 +139,41 @@ window.Sankalp = {
       }
     });
 
-    // Trigger specific renders on view switch
-    if (viewName === 'dashboard') {
-      this.renderDashboard();
-    } else if (viewName === 'tasks' && window.SankalpTasks) {
-      window.SankalpTasks.render();
-    } else if (viewName === 'habits' && window.SankalpHabits) {
-      window.SankalpHabits.render();
-    } else if (viewName === 'journal' && window.SankalpJournal) {
-      window.SankalpJournal.render();
-    } else if (viewName === 'study' && window.SankalpStudy) {
-      window.SankalpStudy.render();
+    // Trigger specific renders on view switch (only if state is loaded)
+    if (this.state) {
+      if (viewName === 'dashboard') {
+        this.renderDashboard();
+      } else if (viewName === 'tasks' && window.SankalpTasks) {
+        window.SankalpTasks.render();
+      } else if (viewName === 'habits' && window.SankalpHabits) {
+        window.SankalpHabits.render();
+      } else if (viewName === 'journal' && window.SankalpJournal) {
+        window.SankalpJournal.render();
+      } else if (viewName === 'study' && window.SankalpStudy) {
+        window.SankalpStudy.render();
+      }
     }
   },
 
   // Dark/Light Theme Handler
   setupTheme() {
     const themeSwitch = document.querySelector('.theme-switch');
+    if (!themeSwitch) return;
     
-    // Apply loaded theme
-    document.documentElement.setAttribute('data-theme', this.state.user.theme || 'dark');
+    // Apply loaded theme (fallback to dark if state not loaded)
+    const userTheme = (this.state && this.state.user) ? this.state.user.theme : 'dark';
+    document.documentElement.setAttribute('data-theme', userTheme);
     
     themeSwitch.addEventListener('click', () => {
       const currentTheme = document.documentElement.getAttribute('data-theme');
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
       
       document.documentElement.setAttribute('data-theme', newTheme);
-      this.state.user.theme = newTheme;
-      this.saveState();
+      
+      if (this.state && this.state.user) {
+        this.state.user.theme = newTheme;
+        this.saveState();
+      }
       
       this.showToast(`🌙 Theme set to ${newTheme.toUpperCase()}`, 'info');
     });
@@ -198,8 +202,10 @@ window.Sankalp = {
         span.textContent = newName;
         input.replaceWith(span);
         
-        this.state.user.name = newName;
-        this.saveState();
+        if (this.state && this.state.user) {
+          this.state.user.name = newName;
+          this.saveState();
+        }
         
         // Rebind click listener
         this.setupEditableGreeting();
@@ -269,6 +275,8 @@ window.Sankalp = {
 
   // Render Dashboard Specific Metrics
   renderDashboard() {
+    if (!this.state) return; // Prevent crashes if loaded before fetchState
+
     // Greeting greeting time of day
     const hours = new Date().getHours();
     let greet = 'Good night';
@@ -308,8 +316,6 @@ window.Sankalp = {
     const ringPercentEl = document.querySelector('.ring-percent');
     if (ringProgressEl && ringPercentEl) {
       ringPercentEl.textContent = `${tasksPercent}%`;
-      
-      // Ring circumference is 440 (r=70)
       const offset = 440 - (440 * tasksPercent) / 100;
       ringProgressEl.style.strokeDashoffset = offset;
     }
@@ -378,7 +384,6 @@ window.Sankalp = {
         btn.classList.remove('selected');
       }
 
-      // Handle clicking
       btn.onclick = () => {
         if (!this.state.journal) this.state.journal = {};
         if (!this.state.journal[todayStr]) {
@@ -392,7 +397,6 @@ window.Sankalp = {
         this.saveState();
         this.renderDashboardMoodSelector();
         
-        // Update stats icon/value
         const moodValLabel = document.getElementById('stat-mood-val');
         if (moodValLabel) {
           moodValLabel.textContent = newMood ? btn.querySelector('.mood-emoji').textContent : 'N/A';
@@ -457,13 +461,11 @@ window.Sankalp = {
     toast.textContent = message;
     container.appendChild(toast);
 
-    // Fade In
     setTimeout(() => {
       toast.style.transform = 'translateX(0)';
       toast.style.opacity = '1';
     }, 10);
 
-    // Fade Out
     setTimeout(() => {
       toast.style.transform = 'translateX(100px)';
       toast.style.opacity = '0';
