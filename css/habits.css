@@ -242,3 +242,10 @@
   border-color: var(--text-primary);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .habit-delete-btn {
+    opacity: 1 !important;
+  }
+}

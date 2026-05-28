@@ -10,6 +10,7 @@ body {
   background: var(--bg-gradient);
   color: var(--text-primary);
   min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
   display: flex;
   transition: background var(--transition-slow);
@@ -62,6 +63,7 @@ body {
   display: flex;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   position: relative;
   overflow: hidden;
 }
@@ -501,7 +503,7 @@ body {
   }
 
   .main-content {
-    padding: 6rem 1.5rem 2.5rem 1.5rem; /* Space for top mobile burger */
+    padding: 4.5rem 1.25rem 2rem 1.25rem; /* Space for top mobile burger */
   }
 
   .view-header {
