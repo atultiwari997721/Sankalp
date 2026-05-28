@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sankalp - Daily Productivity Hub</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/tasks.css">
+  <link rel="stylesheet" href="css/pomodoro.css">
+  <link rel="stylesheet" href="css/habits.css">
+  <link rel="stylesheet" href="css/journal.css">
+  <link rel="stylesheet" href="css/zen.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="logo-container">
+        <div class="logo-icon">S</div>
+        <span class="logo-text">Sankalp</span>
+      </div>
+      
+      <nav class="nav-menu">
+        <li class="nav-item">
+          <a class="nav-link active" data-view="dashboard">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+            Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="tasks">
+            <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Tasks
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="pomodoro">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Pomodoro
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="habits">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            Habit Tracker
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="journal">
+            <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Journal
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="zen">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            Zen Mode
+          </a>
+        </li>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="theme-toggle-container">
+          <span class="theme-label">Light Theme</span>
+          <div class="theme-switch">
+            <div class="theme-switch-knob">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="footer-credits">
+          Sankalp &copy; 2026
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="main-content">
+      
+      <!-- ==================== DASHBOARD VIEW ==================== -->
+      <section id="dashboard-view" class="view-section active-view">
+        <div class="view-header">
+          <div class="view-title-container">
+            <h1>Dashboard</h1>
+            <span class="view-subtitle">Today is a fresh opportunity to align your determination.</span>
+          </div>
+        </div>
+        
+        <div class="dashboard-grid">
+          
+          <!-- Greeting Card -->
+          <div class="greeting-section glass-panel glow-card span-12">
+            <div class="greeting-text">
+              <h2>👋 Good day, <span class="greeting-name">Champ</span></h2>
+              <span class="greeting-quote">Make today count. Set your targets high.</span>
+            </div>
+            <div class="dashboard-date">
+              <div class="dashboard-date-time">00:00:00</div>
+              <div class="dashboard-date-day">Loading day...</div>
+            </div>
+          </div>
+          
+          <!-- Stat 1: Tasks -->
+          <div class="stat-card glass-panel glow-card">
+            <div class="stat-icon icon-tasks">
+              <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="stat-tasks-val">0/0</span>
+              <span class="stat-label">Tasks Done</span>
+            </div>
+          </div>
+          
+          <!-- Stat 2: Focus Minutes -->
+          <div class="stat-card glass-panel glow-card">
+            <div class="stat-icon icon-focus">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="stat-focus-val">0m</span>
+              <span class="stat-label">Focus Time</span>
+            </div>
+          </div>
+          
+          <!-- Stat 3: Habit Streak -->
+          <div class="stat-card glass-panel glow-card">
+            <div class="stat-icon icon-streak">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="stat-streak-val">0d</span>
+              <span class="stat-label">Best Streak</span>
+            </div>
+          </div>
+          
+          <!-- Stat 4: Mood -->
+          <div class="stat-card glass-panel glow-card">
+            <div class="stat-icon icon-mood">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="stat-mood-val">N/A</span>
+              <span class="stat-label">Today's Mood</span>
+            </div>
+          </div>
+          
+          <!-- Productivity Ring Card -->
+          <div class="productivity-card glass-panel glow-card">
+            <h3 class="mood-title">Completion</h3>
+            <div class="ring-container">
+              <svg class="ring-svg" viewBox="0 0 160 160" width="150" height="150">
+                <defs>
+                  <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="var(--accent-primary)"/>
+                    <stop offset="100%" stop-color="var(--accent-secondary)"/>
+                  </linearGradient>
+                </defs>
+                <circle class="ring-bg" cx="80" cy="80" r="70"/>
+                <circle class="ring-progress" cx="80" cy="80" r="70"/>
+              </svg>
+              <div class="ring-text">
+                <span class="ring-percent">0%</span>
+                <span class="ring-percent-label">Productive</span>
+              </div>
+            </div>
+            <span style="font-size: 0.8rem; color: var(--text-secondary);">Today's progress index</span>
+          </div>
+          
+          <!-- Mood & Reflections -->
+          <div class="mood-reflection-card glass-panel glow-card">
+            <div>
+              <h3 class="mood-title">How do you feel today?</h3>
+              <div class="mood-selector">
+                <button class="mood-btn" data-mood="Amazing">
+                  <span class="mood-emoji">🤩</span>
+                  <span class="mood-name">Amazing</span>
+                </button>
+                <button class="mood-btn" data-mood="Good">
+                  <span class="mood-emoji">🙂</span>
+                  <span class="mood-name">Good</span>
+                </button>
+                <button class="mood-btn" data-mood="Neutral">
+                  <span class="mood-emoji">😐</span>
+                  <span class="mood-name">Neutral</span>
+                </button>
+                <button class="mood-btn" data-mood="Tired">
+                  <span class="mood-emoji">🥱</span>
+                  <span class="mood-name">Tired</span>
+                </button>
+                <button class="mood-btn" data-mood="Bad">
+                  <span class="mood-emoji">😔</span>
+                  <span class="mood-name">Bad</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="affirmation-container">
+              <div class="affirmation-heading">Today's Affirmation</div>
+              <p class="affirmation-text">Sankalp is your determination. Stand firm in your purpose today.</p>
+            </div>
+          </div>
+          
+          <!-- Today's Task Overview List -->
+          <div class="today-tasks-summary-card glass-panel glow-card">
+            <div class="tasks-summary-header">
+              <h3 style="font-family: var(--font-heading); font-size: 1.25rem;">Today's Focus Tasks</h3>
+              <button class="glass-btn" onclick="window.Sankalp.switchView('tasks')">Manage Tasks &rarr;</button>
+            </div>
+            <div class="tasks-summary-list">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==================== TASKS VIEW ==================== -->
+      <section id="tasks-view" class="view-section">
+        <div class="view-header">
+          <div class="view-title-container">
+            <h1>Task Board</h1>
+            <span class="view-subtitle">Manage, categorize, and complete your daily checklist.</span>
+          </div>
+          <button class="glass-btn btn-primary" id="add-task-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="3" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Create Task
+          </button>
+        </div>
+        
+        <div class="tasks-container">
+          <div class="tasks-control-bar">
+            <!-- Category Chips -->
+            <div class="tasks-filters" id="category-filters">
+              <button class="filter-chip active" data-filter="all">All</button>
+              <button class="filter-chip" data-filter="Work">Work</button>
+              <button class="filter-chip" data-filter="Personal">Personal</button>
+              <button class="filter-chip" data-filter="Health">Health</button>
+              <button class="filter-chip" data-filter="Learning">Learning</button>
+            </div>
+
+            <!-- Priority Chips -->
+            <div class="tasks-filters" id="priority-filters">
+              <span style="font-size: 0.8rem; color: var(--text-muted); align-self: center; margin-right: 0.25rem;">Priority:</span>
+              <button class="filter-chip active" data-filter="all">All</button>
+              <button class="filter-chip" data-filter="high">High</button>
+              <button class="filter-chip" data-filter="medium">Medium</button>
+              <button class="filter-chip" data-filter="low">Low</button>
+            </div>
+          </div>
+          
+          <div class="tasks-grid" id="tasks-grid">
+            <!-- Tasks loaded dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== POMODORO VIEW ==================== -->
+      <section id="pomodoro-view" class="view-section">
+        <div class="view-header">
+          <div class="view-title-container">
+            <h1>Focus Timer</h1>
+            <span class="view-subtitle">Block out distractions and build focus with custom ambient waves.</span>
+          </div>
+        </div>
+
+        <div class="pomodoro-container">
+          
+          <!-- Timer Panel -->
+          <div class="timer-panel glass-panel glow-card">
+            
+            <!-- Assigned Active Task Display -->
+            <div class="timer-task-display" id="timer-task-display-container" style="display: none;">
+              <svg viewBox="0 0 24 24"><polygon points="12 2 2 22 22 22 12 2"/></svg>
+              <span id="timer-active-task-name">Focusing on: ...</span>
+            </div>
+
+            <!-- Visual Clock Circle -->
+            <div class="clock-container">
+              <svg class="clock-svg" viewBox="0 0 280 280">
+                <defs>
+                  <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="var(--accent-cyan)"/>
+                    <stop offset="100%" stop-color="var(--accent-primary)"/>
+                  </linearGradient>
+                </defs>
+                <circle class="clock-bg" cx="140" cy="140" r="130"/>
+                <circle class="clock-progress" cx="140" cy="140" r="130"/>
+              </svg>
+              <div class="clock-face">
+                <div class="clock-time">25:00</div>
+                <div class="clock-state-label">Focus Session</div>
+              </div>
+            </div>
+
+            <!-- Mode Switchers -->
+            <div class="timer-presets">
+              <button class="preset-btn active" data-mode="work">Pomodoro (25m)</button>
+              <button class="preset-btn" data-mode="short">Short Break (5m)</button>
+              <button class="preset-btn" data-mode="long">Long Break (15m)</button>
+            </div>
+
+            <!-- Controls -->
+            <div class="timer-controls">
+              <button class="control-btn" id="reset-timer-btn" title="Reset Timer">
+                <svg viewBox="0 0 24 24"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2L2.5 8m0 8l.7.8A10 10 0 0 0 20.8 16.8l.7-.8"/></svg>
+              </button>
+              
+              <button class="control-btn btn-play-pause" id="play-pause-timer-btn" title="Play/Pause">
+                <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="white"/></svg>
+              </button>
+              
+              <button class="control-btn" id="skip-timer-btn" title="Skip Session">
+                <svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke-width="2"/></svg>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Ambient Sounds Grid -->
+          <div class="ambient-sounds-panel glass-panel glow-card">
+            <h3 class="sounds-title">
+              <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              Ambient Audio Synthesizers
+            </h3>
+            <div class="sounds-grid">
+              
+              <!-- Rain -->
+              <div class="sound-card glass-panel glow-card" data-sound="rain">
+                <div class="sound-card-header">
+                  <div class="sound-icon-box">
+                    <svg viewBox="0 0 24 24"><path d="M20 17.58A6 6 0 1 1 8 8h1.79A7 7 0 1 1 20 17.58z"/><path d="M12 12v10"/><path d="M8 14v4"/><path d="M16 14v4"/></svg>
+                  </div>
+                  <div class="sound-info">
+                    <span class="sound-name">Rainstorm</span>
+                    <span class="sound-desc">Synthesized drizzle</span>
+                  </div>
+                </div>
+                <input type="range" class="sound-volume-slider" min="0" max="1" step="0.05" value="0.4">
+                <div class="visualizer-container">
+                  <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                </div>
+              </div>
+
+              <!-- Lofi Drone -->
+              <div class="sound-card glass-panel glow-card" data-sound="lofi">
+                <div class="sound-card-header">
+                  <div class="sound-icon-box">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z"/></svg>
+                  </div>
+                  <div class="sound-info">
+                    <span class="sound-name">Cozy Drone</span>
+                    <span class="sound-desc">Melancholic warm chord</span>
+                  </div>
+                </div>
+                <input type="range" class="sound-volume-slider" min="0" max="1" step="0.05" value="0.3">
+                <div class="visualizer-container">
+                  <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                </div>
+              </div>
+
+              <!-- Zen Chimes -->
+              <div class="sound-card glass-panel glow-card" data-sound="zen">
+                <div class="sound-card-header">
+                  <div class="sound-icon-box">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                  </div>
+                  <div class="sound-info">
+                    <span class="sound-name">Deep Wind</span>
+                    <span class="sound-desc">Deep rumble & chimes</span>
+                  </div>
+                </div>
+                <input type="range" class="sound-volume-slider" min="0" max="1" step="0.05" value="0.4">
+                <div class="visualizer-container">
+                  <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==================== HABITS VIEW ==================== -->
+      <section id="habits-view" class="view-section">
+        <div class="view-header">
+          <div class="view-title-container">
+            <h1>Habit Tracker</h1>
+            <span class="view-subtitle">Consistently mark off daily targets to maintain compounding streaks.</span>
+          </div>
+          <button class="glass-btn btn-primary" id="add-habit-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="3" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Track Habit
+          </button>
+        </div>
+
+        <div class="habits-container">
+          <div class="habits-list" id="habits-list">
+            <!-- Habit cards loaded dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== JOURNAL VIEW ==================== -->
+      <section id="journal-view" class="view-section">
+        <div class="view-header">
+          <div class="view-title-container">
+            <h1>Daily Journal</h1>
+            <span class="view-subtitle">Structured prompts for self-awareness, mindfulness, and reflections.</span>
+          </div>
+        </div>
+
+        <div class="journal-container">
+          
+          <!-- Journal Entry Form -->
+          <div class="journal-form-card glass-panel glow-card">
+            
+            <div class="journal-header-row">
+              <span class="journal-date-label" id="journal-date-label">Today</span>
+              <div class="journal-mood-status" id="journal-mood-status-text">
+                No mood logged on Dashboard today.
+              </div>
+            </div>
+
+            <div class="journal-panels">
+              <!-- Morning Intentions -->
+              <div class="journal-panel morning">
+                <h3 class="journal-panel-title">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                  Morning Intentions
+                </h3>
+                <div class="journal-question">
+                  <label for="journal-morning-input">What are you focusing on today?</label>
+                  <textarea id="journal-morning-input" class="glass-input journal-textarea" placeholder="Identify 1-3 intentions to direct your energy..."></textarea>
+                </div>
+              </div>
+
+              <!-- Evening Gratitude -->
+              <div class="journal-panel evening">
+                <h3 class="journal-panel-title">
+                  <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                  Evening Reflection
+                </h3>
+                <div class="journal-question">
+                  <label for="journal-evening-input">Three good things that happened:</label>
+                  <textarea id="journal-evening-input" class="glass-input journal-textarea" placeholder="Log wins, moments of connection or gratitude..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+              <button class="glass-btn btn-primary" id="save-journal-btn">
+                Save Reflections
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Journal Logs Sidebar -->
+          <div class="journal-history-card glass-panel glow-card">
+            <h3 class="history-title">Reflection History</h3>
+            <div class="journal-history-list" id="journal-history-list">
+              <!-- Logs items loaded dynamically -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==================== ZEN MODE VIEW ==================== -->
+      <section id="zen-view" class="view-section">
+        <button class="glass-btn btn-primary zen-exit-btn" id="exit-zen-btn">
+          Exit Zen Mode
+        </button>
+
+        <div class="zen-container">
+          
+          <div class="zen-instructions">
+            <h2 class="zen-instruction-heading" id="zen-bubble-text">START</h2>
+            <p class="zen-instruction-text" id="zen-desc-text">Begin your box breathing session.</p>
+          </div>
+
+          <!-- Expanding breathing guide bubble -->
+          <div class="breath-bubble-outer">
+            <div class="breath-bubble-aura"></div>
+            <div class="breath-bubble-inner" id="zen-bubble-inner" style="cursor: pointer;">
+              <span class="breath-bubble-text" id="start-zen-btn">BREATHE</span>
+            </div>
+          </div>
+
+          <!-- Zen parameters -->
+          <div class="zen-settings">
+            <div class="zen-sound-toggle">
+              <input type="checkbox" id="zen-sound-checkbox" style="cursor: pointer; width: 16px; height: 16px;">
+              <label for="zen-sound-checkbox" style="font-size: 0.9rem; color: var(--text-secondary); cursor: pointer; user-select: none;">
+                Enable Breath-Synced Soundscape
+              </label>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ==================== MODAL: ADD TASK ==================== -->
+  <div class="modal-backdrop" id="task-modal">
+    <div class="modal-container glass-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.4rem;">New Target Task</h2>
+        <button id="close-task-modal" style="background:none; border:none; color:var(--text-secondary); font-size: 1.5rem; cursor:pointer;">&times;</button>
+      </div>
+
+      <form id="task-form">
+        <div class="task-form-group">
+          <label class="task-form-label" for="task-title">Title</label>
+          <input type="text" id="task-title" class="glass-input" placeholder="What are you working on?" required>
+        </div>
+
+        <div class="task-form-group">
+          <label class="task-form-label" for="task-desc">Description</label>
+          <input type="text" id="task-desc" class="glass-input" placeholder="Add specific context...">
+        </div>
+
+        <div class="task-form-row">
+          <div class="task-form-group">
+            <label class="task-form-label" for="task-category">Category</label>
+            <select id="task-category" class="glass-input" style="color: var(--text-primary);">
+              <option value="Personal" style="background-color: #0c0b20;">Personal</option>
+              <option value="Work" style="background-color: #0c0b20;">Work</option>
+              <option value="Health" style="background-color: #0c0b20;">Health</option>
+              <option value="Learning" style="background-color: #0c0b20;">Learning</option>
+            </select>
+          </div>
+
+          <div class="task-form-group">
+            <label class="task-form-label" for="task-priority">Priority</label>
+            <select id="task-priority" class="glass-input" style="color: var(--text-primary);">
+              <option value="low" style="background-color: #0c0b20;">Low</option>
+              <option value="medium" style="background-color: #0c0b20;">Medium</option>
+              <option value="high" style="background-color: #0c0b20;">High</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="task-form-group">
+          <label class="task-form-label" for="task-due">Due Date</label>
+          <input type="date" id="task-due" class="glass-input" style="color: var(--text-primary);">
+        </div>
+
+        <!-- Subtasks Builder inside Modal -->
+        <div class="task-form-group">
+          <label class="task-form-label">Subtask Checklist</label>
+          <div class="subtasks-input-builder">
+            <div class="subtask-builder-row">
+              <input type="text" id="task-subtask-input" class="glass-input" style="flex: 1;" placeholder="Add item (press Enter or Click +)...">
+              <button type="button" class="glass-btn" id="add-subtask-chip-btn" style="padding: 0.5rem 1rem;">+</button>
+            </div>
+            <div class="subtask-chip-list" id="subtask-chip-list">
+              <!-- Added chips will render here -->
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="glass-btn" id="cancel-task-btn">Cancel</button>
+          <button type="submit" class="glass-btn btn-primary">Create Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ADD HABIT ==================== -->
+  <div class="modal-backdrop" id="habit-modal">
+    <div class="modal-container glass-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.4rem;">New Habit</h2>
+        <button id="close-habit-modal" style="background:none; border:none; color:var(--text-secondary); font-size: 1.5rem; cursor:pointer;">&times;</button>
+      </div>
+
+      <form id="habit-form">
+        <div class="task-form-group">
+          <label class="task-form-label" for="habit-title">Habit Name</label>
+          <input type="text" id="habit-title" class="glass-input" placeholder="e.g., Meditate, Read, Workout" required>
+        </div>
+
+        <div class="task-form-group">
+          <label class="task-form-label" for="habit-frequency">Frequency</label>
+          <select id="habit-frequency" class="glass-input" style="color: var(--text-primary);">
+            <option value="daily" style="background-color: #0c0b20;">Daily</option>
+            <option value="weekly" style="background-color: #0c0b20;">Weekly</option>
+          </select>
+        </div>
+
+        <div class="task-form-group">
+          <label class="task-form-label color-picker-label">Accent Glow Color</label>
+          <div class="color-option-container">
+            <div class="color-option selected" data-color="#6366f1" style="background-color: #6366f1;"></div>
+            <div class="color-option" data-color="#a855f7" style="background-color: #a855f7;"></div>
+            <div class="color-option" data-color="#ec4899" style="background-color: #ec4899;"></div>
+            <div class="color-option" data-color="#06b6d4" style="background-color: #06b6d4;"></div>
+            <div class="color-option" data-color="#10b981" style="background-color: #10b981;"></div>
+            <div class="color-option" data-color="#f59e0b" style="background-color: #f59e0b;"></div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="glass-btn" id="cancel-habit-btn">Cancel</button>
+          <button type="submit" class="glass-btn btn-primary">Track Habit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript Files -->
+  <script src="js/tasks.js"></script>
+  <script src="js/pomodoro.js"></script>
+  <script src="js/habits.js"></script>
+  <script src="js/journal.js"></script>
+  <script src="js/zen.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

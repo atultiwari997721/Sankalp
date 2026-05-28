@@ -1,0 +1,358 @@
+/* Pomodoro Timer View Styles */
+.pomodoro-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1rem 0;
+}
+
+/* Timer Section */
+.timer-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.timer-task-display {
+  font-size: 0.95rem;
+  color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--border-radius-full);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all var(--transition-normal);
+}
+
+.timer-task-display svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--accent-cyan);
+  fill: none;
+  animation: pulseGlow 2s infinite;
+}
+
+/* Big Clock Display */
+.clock-container {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin-bottom: 2rem;
+}
+
+.clock-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.clock-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.03);
+  stroke-width: 8;
+}
+
+[data-theme="light"] .clock-bg {
+  stroke: rgba(0, 0, 0, 0.03);
+}
+
+.clock-progress {
+  fill: none;
+  stroke: url(#timer-gradient);
+  stroke-width: 8;
+  stroke-dasharray: 816; /* 2 * PI * r (r=130 -> 816.8) */
+  stroke-dashoffset: 816;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.clock-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.clock-time {
+  font-family: var(--font-heading);
+  font-size: 4rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -1px;
+}
+
+.clock-state-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 700;
+  margin-top: 0.25rem;
+}
+
+/* Preset Buttons */
+.timer-presets {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.preset-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--border-radius-full);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+[data-theme="light"] .preset-btn {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.preset-btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-primary);
+}
+
+.preset-btn.active {
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+  border: none;
+  color: white;
+  box-shadow: var(--glow-shadow-indigo);
+}
+
+/* Controls */
+.timer-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.control-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: var(--glass-border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.control-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--text-primary);
+  fill: none;
+  stroke-width: 2;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+.control-btn.btn-play-pause {
+  width: 68px;
+  height: 68px;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+  border: none;
+  box-shadow: var(--glow-shadow-indigo);
+}
+
+.control-btn.btn-play-pause:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+}
+
+.control-btn.btn-play-pause svg {
+  stroke: white;
+  width: 26px;
+  height: 26px;
+}
+
+/* Ambient Sounds Board */
+.ambient-sounds-panel {
+  width: 100%;
+  padding: 1.8rem;
+}
+
+.sounds-title {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sounds-title svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--accent-secondary);
+  fill: none;
+}
+
+.sounds-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .sounds-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sound-card {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-normal);
+}
+
+.sound-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sound-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--border-radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sound-icon-box svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--text-secondary);
+  fill: none;
+  stroke-width: 2;
+}
+
+.sound-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.sound-card.active {
+  border-color: var(--accent-secondary);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(236, 72, 153, 0.05) 100%);
+  box-shadow: var(--glow-shadow-purple);
+}
+
+.sound-card.active .sound-icon-box {
+  background: rgba(168, 85, 247, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.sound-card.active .sound-icon-box svg {
+  stroke: var(--accent-secondary);
+}
+
+.sound-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.sound-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sound-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Volume Slider inside Sound Card */
+.sound-volume-slider {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-full);
+  outline: none;
+  opacity: 0.5;
+  transition: opacity var(--transition-fast);
+}
+
+.sound-card.active .sound-volume-slider {
+  opacity: 1;
+}
+
+.sound-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  cursor: pointer;
+}
+
+.sound-card.active .sound-volume-slider::-webkit-slider-thumb {
+  background: var(--accent-secondary);
+}
+
+/* Audio Visualizer Waves */
+.visualizer-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 20px;
+  margin-top: 0.5rem;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.sound-card.active .visualizer-container {
+  opacity: 1;
+}
+
+.wave-bar {
+  width: 3px;
+  height: 100%;
+  background: var(--accent-secondary);
+  border-radius: var(--border-radius-full);
+  animation: soundWave 1.2s ease-in-out infinite alternate;
+}
+
+.wave-bar:nth-child(2) { animation-delay: 0.15s; }
+.wave-bar:nth-child(3) { animation-delay: 0.3s; }
+.wave-bar:nth-child(4) { animation-delay: 0.45s; }
+.wave-bar:nth-child(5) { animation-delay: 0.6s; }
+
+@keyframes soundWave {
+  0% { height: 4px; }
+  100% { height: 20px; }
+}

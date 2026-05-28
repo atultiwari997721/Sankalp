@@ -1,0 +1,77 @@
+/* CSS Custom Properties & Design Tokens */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Typography */
+  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Theme: Deep Space Dark (Default) */
+  --bg-gradient: radial-gradient(circle at 50% 50%, #0d0b21 0%, #05040a 100%);
+  --bg-gradient-secondary: linear-gradient(135deg, #161233 0%, #0d0a1a 100%);
+  
+  --panel-bg: rgba(18, 14, 38, 0.6);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-border-glow: rgba(99, 102, 241, 0.15);
+  
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  
+  /* Neon Accents */
+  --accent-primary: #6366f1; /* Indigo */
+  --accent-primary-rgb: 99, 102, 241;
+  --accent-secondary: #a855f7; /* Purple */
+  --accent-secondary-rgb: 168, 85, 247;
+  --accent-tertiary: #ec4899; /* Pink */
+  --accent-tertiary-rgb: 236, 72, 153;
+  --accent-cyan: #06b6d4; /* Cyan */
+  --accent-cyan-rgb: 6, 182, 212;
+  --accent-success: #10b981; /* Emerald */
+  --accent-warning: #f59e0b; /* Amber */
+  --accent-danger: #ef4444; /* Rose */
+  
+  /* Glassmorphism settings */
+  --glass-blur: blur(16px);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  
+  --sidebar-width: 260px;
+  --border-radius-sm: 8px;
+  --border-radius-md: 14px;
+  --border-radius-lg: 24px;
+  --border-radius-full: 9999px;
+  
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  --glow-shadow-indigo: 0 0 15px rgba(99, 102, 241, 0.4);
+  --glow-shadow-purple: 0 0 15px rgba(168, 85, 247, 0.4);
+  --glow-shadow-cyan: 0 0 15px rgba(6, 182, 212, 0.4);
+}
+
+[data-theme="light"] {
+  /* Theme: Aurora Light Mode */
+  --bg-gradient: radial-gradient(circle at 50% 50%, #f4f5fc 0%, #e0e4f7 100%);
+  --bg-gradient-secondary: linear-gradient(135deg, #ffffff 0%, #ebedfa 100%);
+  
+  --panel-bg: rgba(255, 255, 255, 0.65);
+  --panel-border: rgba(99, 102, 241, 0.12);
+  --panel-border-glow: rgba(99, 102, 241, 0.25);
+  
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  
+  --accent-primary: #4f46e5; /* Indigo slightly darker */
+  --accent-secondary: #9333ea; /* Purple slightly darker */
+  --accent-tertiary: #db2777; /* Pink slightly darker */
+  
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.4);
+  
+  --glow-shadow-indigo: 0 0 15px rgba(99, 102, 241, 0.25);
+  --glow-shadow-purple: 0 0 15px rgba(168, 85, 247, 0.25);
+  --glow-shadow-cyan: 0 0 15px rgba(6, 182, 212, 0.25);
+}

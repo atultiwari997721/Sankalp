@@ -1,0 +1,244 @@
+/* Habit Tracker View Styles */
+.habits-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.habits-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Habit List */
+.habits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.habit-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: all var(--transition-normal);
+}
+
+.habit-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.habit-info-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.habit-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.habit-frequency {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.habit-streaks {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.streak-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--border-radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.streak-badge.current-streak {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--accent-warning);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.1);
+}
+
+.streak-badge.best-streak {
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: var(--accent-secondary);
+}
+
+.streak-badge svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke-width: 2.5;
+}
+
+.streak-badge.current-streak svg {
+  stroke: var(--accent-warning);
+  fill: rgba(245, 158, 11, 0.2);
+}
+
+.streak-badge.best-streak svg {
+  stroke: var(--accent-secondary);
+}
+
+.habit-delete-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all var(--transition-fast);
+}
+
+.habit-card:hover .habit-delete-btn {
+  opacity: 1;
+}
+
+.habit-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--accent-danger);
+}
+
+.habit-delete-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--text-muted);
+  fill: none;
+  stroke-width: 2;
+}
+
+.habit-delete-btn:hover svg {
+  stroke: var(--accent-danger);
+}
+
+/* Week Tracker Matrix */
+.habit-week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 500px) {
+  .habit-week-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.habit-day-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.habit-day-name {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.habit-day-check {
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 54px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+[data-theme="light"] .habit-day-check {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.habit-day-check svg {
+  width: 16px;
+  height: 16px;
+  stroke: #ffffff;
+  stroke-width: 3.5;
+  fill: none;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all var(--transition-fast);
+}
+
+.habit-day-check.completed {
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+  border: none;
+  box-shadow: var(--glow-shadow-indigo);
+}
+
+.habit-day-check.completed svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.habit-day-check.future {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(0,0,0,0.1);
+}
+
+/* Habit Form Color Selection */
+.color-picker-label {
+  margin-top: 0.5rem;
+}
+
+.color-option-container {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.color-option {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 2px solid transparent;
+}
+
+.color-option:hover {
+  transform: scale(1.15);
+}
+
+.color-option.selected {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="light"] .color-option.selected {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
