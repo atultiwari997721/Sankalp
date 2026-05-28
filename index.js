@@ -12,12 +12,12 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
-const USERS_REGISTRY_FILE = path.join(__dirname, 'data', 'users.json');
-const USERS_DIR = path.join(__dirname, 'data', 'users');
+const dataDir = process.env.VERCEL ? path.join('/tmp', 'data') : path.join(__dirname, 'data');
+const USERS_REGISTRY_FILE = path.join(dataDir, 'users.json');
+const USERS_DIR = path.join(dataDir, 'users');
 
 // Ensure database directories exist
 function ensureDirs() {
-  const dataDir = path.join(__dirname, 'data');
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
   }
