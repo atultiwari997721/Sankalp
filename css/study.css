@@ -198,3 +198,19 @@
 .study-step-item.completed .study-step-check svg {
   opacity: 1;
 }
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .study-card-actions {
+    opacity: 1 !important;
+  }
+  .study-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .study-grid {
+    grid-template-columns: 1fr;
+  }
+}

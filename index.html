@@ -356,19 +356,19 @@
             </div>
 
             <!-- Chat Inputs Form -->
-            <form id="saarthi-chat-form" class="chat-input-form" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; margin-top: 0.5rem;">
-              <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <form id="saarthi-chat-form" class="chat-input-form">
+              <div class="saarthi-input-row">
                 
-                <div style="display: flex; gap: 0.5rem; flex: 1; min-width: 250px;">
-                  <input type="text" id="saarthi-input" class="glass-input" style="flex: 1; padding: 0.65rem 1rem; font-size: 0.9rem;" placeholder="Paste syllabus (e.g. Master React in 10 Days)..." required>
-                  <button type="submit" class="glass-btn btn-primary" style="padding: 0 1.25rem;">
+                <div class="saarthi-input-main-group">
+                  <input type="text" id="saarthi-input" class="glass-input saarthi-text-input" placeholder="Paste syllabus (e.g. Master React in 10 Days)..." required>
+                  <button type="submit" class="glass-btn btn-primary saarthi-send-btn">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="3" fill="none"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                   </button>
                 </div>
 
-                <div style="display: flex; gap: 0.5rem; width: 100%; max-width: 260px; justify-content: flex-end;">
-                  <div class="task-form-group" style="margin-bottom: 0; width: 130px;">
-                    <select id="saarthi-subject" class="glass-input" style="color: var(--text-primary); padding: 0.5rem; font-size: 0.8rem; width: 100%;">
+                <div class="saarthi-input-settings-group">
+                  <div class="task-form-group select-group">
+                    <select id="saarthi-subject" class="glass-input saarthi-subject-select">
                       <option value="Computer Science" style="background-color: #0c0b20;">CS / Tech</option>
                       <option value="Mathematics" style="background-color: #0c0b20;">Maths</option>
                       <option value="Biology" style="background-color: #0c0b20;">Biology</option>
@@ -376,8 +376,8 @@
                       <option value="Physics" style="background-color: #0c0b20;">Physics</option>
                     </select>
                   </div>
-                  <div class="task-form-group" style="margin-bottom: 0; width: 80px;">
-                    <input type="number" id="saarthi-days" class="glass-input" style="padding: 0.5rem; font-size: 0.8rem; width: 100%; text-align: center; color: var(--text-primary);" min="2" max="30" value="10" title="Target days">
+                  <div class="task-form-group days-group">
+                    <input type="number" id="saarthi-days" class="glass-input saarthi-days-input" min="2" max="30" value="10" title="Target days">
                   </div>
                 </div>
 

@@ -301,7 +301,7 @@ app.post('/api/saarthi/generate', async (req, res) => {
 
 // Fallback to index.html for SPA routes
 app.use((req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile('index.html', { root: __dirname });
 });
 
 app.listen(PORT, () => {

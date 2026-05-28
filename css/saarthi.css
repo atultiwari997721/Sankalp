@@ -239,3 +239,96 @@
   0% { transform: translateY(0); }
   100% { transform: translateY(-5px); }
 }
+
+/* Chat Form Styles & Responsiveness */
+.chat-input-form {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+}
+
+.saarthi-input-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.saarthi-input-main-group {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 250px;
+}
+
+.saarthi-text-input {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+}
+
+.saarthi-send-btn {
+  padding: 0 1.25rem;
+}
+
+.saarthi-input-settings-group {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 260px;
+  justify-content: flex-end;
+}
+
+.saarthi-input-settings-group .task-form-group {
+  margin-bottom: 0;
+}
+
+.saarthi-input-settings-group .select-group {
+  width: 130px;
+}
+
+.saarthi-input-settings-group .days-group {
+  width: 80px;
+}
+
+.saarthi-subject-select {
+  color: var(--text-primary);
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  width: 100%;
+}
+
+.saarthi-days-input {
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  width: 100%;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+@media (max-width: 600px) {
+  .saarthi-input-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .saarthi-input-main-group {
+    width: 100%;
+    min-width: 0;
+  }
+  
+  .saarthi-input-settings-group {
+    max-width: none;
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .saarthi-input-settings-group .select-group {
+    flex: 1;
+  }
+  
+  .saarthi-input-settings-group .days-group {
+    width: 90px;
+  }
+}
