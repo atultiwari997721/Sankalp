@@ -196,7 +196,7 @@ window.SankalpSaarthi = {
       return;
     }
 
-    cardPanel.style.display = 'block';
+    cardPanel.style.display = 'flex';
 
     this.currentGeneratedPlans.forEach(plan => {
       const item = document.createElement('div');
