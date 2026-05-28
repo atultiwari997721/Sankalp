@@ -74,6 +74,18 @@ window.SankalpTimer = {
         });
       }
     });
+
+    // Fullscreen Focus Toggles
+    const fullscreenBtn = document.getElementById('pomodoro-fullscreen-btn');
+    if (fullscreenBtn) {
+      fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
+    }
+
+    // Standard fullscreen change listeners
+    document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
+    document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
+    document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
+    document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
   },
 
   setActiveTask(task) {
@@ -165,15 +177,12 @@ window.SankalpTimer = {
 
   timerCompleted() {
     this.pauseTimer();
-    
-    // Play simple synthetic chime
     this.triggerCompletedSound();
 
     if (this.timerMode === 'work') {
       window.Sankalp.state.user.focusMinutes += Math.round(this.duration / 60);
       window.Sankalp.saveState();
       
-      // If active task was assigned, toggle complete
       if (this.activeTask) {
         window.SankalpTasks.toggleTaskCompletion(this.activeTask.id);
         this.clearActiveTask();
@@ -183,7 +192,6 @@ window.SankalpTimer = {
       this.timerMode = 'short';
       this.duration = 5 * 60;
       
-      // Update Mode Presets active UI
       const presets = document.querySelectorAll('.timer-presets .preset-btn');
       presets.forEach(b => b.classList.remove('active'));
       presets[1].classList.add('active');
@@ -205,21 +213,17 @@ window.SankalpTimer = {
     const secs = this.timeLeft % 60;
     const formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     
-    // Update face
     const clockFace = document.querySelector('.clock-time');
     if (clockFace) clockFace.textContent = formatted;
 
-    // Update circular ring (circumference 816.8)
     const progressRing = document.querySelector('.clock-progress');
     if (progressRing) {
       const offset = 816 - (816 * this.timeLeft) / this.duration;
       progressRing.style.strokeDashoffset = offset;
     }
 
-    // Update document title for easy tab tracking
     document.title = this.isRunning ? `(${formatted}) Sankalp` : 'Sankalp';
 
-    // Update mode label
     const label = document.querySelector('.clock-state-label');
     if (label) {
       if (this.timerMode === 'work') label.textContent = 'Focus Session';
@@ -246,6 +250,56 @@ window.SankalpTimer = {
     }
   },
 
+  // Fullscreen Handlers
+  toggleFullscreen() {
+    const clockPanel = document.getElementById('pomodoro-clock-panel');
+    if (!clockPanel) return;
+
+    const isFS = document.fullscreenElement ||
+                 document.webkitFullscreenElement ||
+                 document.mozFullScreenElement ||
+                 document.msFullscreenElement;
+
+    if (!isFS) {
+      if (clockPanel.requestFullscreen) {
+        clockPanel.requestFullscreen();
+      } else if (clockPanel.webkitRequestFullscreen) {
+        clockPanel.webkitRequestFullscreen();
+      } else if (clockPanel.mozRequestFullScreen) {
+        clockPanel.mozRequestFullScreen();
+      } else if (clockPanel.msRequestFullscreen) {
+        clockPanel.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+  },
+
+  handleFullscreenChange() {
+    const clockPanel = document.getElementById('pomodoro-clock-panel');
+    if (!clockPanel) return;
+
+    const isFS = document.fullscreenElement ||
+                 document.webkitFullscreenElement ||
+                 document.mozFullScreenElement ||
+                 document.msFullscreenElement;
+
+    if (isFS) {
+      clockPanel.classList.add('fullscreen-focus-mode');
+      window.Sankalp.showToast('🔇 Fullscreen Focus mode active. Press ESC to exit.', 'success');
+    } else {
+      clockPanel.classList.remove('fullscreen-focus-mode');
+    }
+  },
+
   // ----------------------------------------------------
   // AMBIENT SOUND GENERATOR (Web Audio Synthesizers)
   // ----------------------------------------------------
@@ -265,16 +319,13 @@ window.SankalpTimer = {
     const clickedCard = document.querySelector(`.sound-card[data-sound="${soundName}"]`);
     const wasActive = clickedCard.classList.contains('active');
 
-    // Turn off all sounds
     document.querySelectorAll('.sound-card').forEach(c => c.classList.remove('active'));
     this.stopSynth();
 
     if (wasActive) {
-      // User turned off current sound
       this.activeSound = null;
       window.Sankalp.showToast('🔇 Ambient sound turned off', 'info');
     } else {
-      // User turned on sound
       clickedCard.classList.add('active');
       this.activeSound = soundName;
       
@@ -293,13 +344,12 @@ window.SankalpTimer = {
   },
 
   playSynth(soundName) {
-    this.stopSynth(); // Safe check
+    this.stopSynth();
     this.initAudioContext();
 
     const slider = document.querySelector(`.sound-card[data-sound="${soundName}"] .sound-volume-slider`);
     const initialVolume = slider ? parseFloat(slider.value) : 0.5;
 
-    // Create Main Gain Node
     const gainNode = this.audioCtx.createGain();
     gainNode.gain.setValueAtTime(initialVolume, this.audioCtx.currentTime);
     gainNode.connect(this.audioCtx.destination);
@@ -315,7 +365,6 @@ window.SankalpTimer = {
   },
 
   stopSynth() {
-    // Disconnect and stop all active nodes
     Object.keys(this.soundNodes).forEach(key => {
       const node = this.soundNodes[key];
       if (node) {
@@ -328,11 +377,8 @@ window.SankalpTimer = {
     this.soundNodes = {};
   },
 
-  // 1. Rain Synthesizer: Brownian noise + crackling filter
   synthesizeRain(outputNode) {
     const ctx = this.audioCtx;
-    
-    // Generate white noise buffer
     const bufferSize = 2 * ctx.sampleRate;
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
@@ -344,7 +390,6 @@ window.SankalpTimer = {
     noiseSource.buffer = noiseBuffer;
     noiseSource.loop = true;
 
-    // Filter to make it sound like rain (low/mid pass rumble)
     const lowpass = ctx.createBiquadFilter();
     lowpass.type = 'lowpass';
     lowpass.frequency.setValueAtTime(500, ctx.currentTime);
@@ -354,8 +399,6 @@ window.SankalpTimer = {
     bandpass.frequency.setValueAtTime(400, ctx.currentTime);
     bandpass.Q.setValueAtTime(0.7, ctx.currentTime);
 
-    // Rain drop crackles (random ticks)
-    // We can simulate this by modulating a highpass filter's amplitude randomly
     const crackleSource = ctx.createBufferSource();
     crackleSource.buffer = noiseBuffer;
     crackleSource.loop = true;
@@ -367,7 +410,6 @@ window.SankalpTimer = {
     const crackleGain = ctx.createGain();
     crackleGain.gain.setValueAtTime(0.04, ctx.currentTime);
 
-    // Connect nodes
     noiseSource.connect(lowpass);
     lowpass.connect(bandpass);
     bandpass.connect(outputNode);
@@ -379,44 +421,37 @@ window.SankalpTimer = {
     noiseSource.start();
     crackleSource.start();
 
-    // Cache sources to turn them off later
     this.soundNodes.source1 = noiseSource;
     this.soundNodes.source2 = crackleSource;
   },
 
-  // 2. Lofi Drone Synthesizer: 2 chord notes slowly weaving + LFO filter sweep
   synthesizeLofi(outputNode) {
     const ctx = this.audioCtx;
-    
-    // Create base chord synthesizers (Soft triangle waves)
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const osc3 = ctx.createOscillator();
 
     osc1.type = 'triangle';
-    osc1.frequency.setValueAtTime(130.81, ctx.currentTime); // C3
+    osc1.frequency.setValueAtTime(130.81, ctx.currentTime);
     
     osc2.type = 'triangle';
-    osc2.frequency.setValueAtTime(164.81, ctx.currentTime); // E3
+    osc2.frequency.setValueAtTime(164.81, ctx.currentTime);
     
     osc3.type = 'sine';
-    osc3.frequency.setValueAtTime(196.00, ctx.currentTime); // G3
+    osc3.frequency.setValueAtTime(196.00, ctx.currentTime);
 
-    // Low pass filter to remove harshness
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.setValueAtTime(250, ctx.currentTime);
 
-    // LFO to sweep filter cutoff for cozy movement
     const lfo = ctx.createOscillator();
-    lfo.frequency.setValueAtTime(0.1, ctx.currentTime); // 10 seconds cycle
+    lfo.frequency.setValueAtTime(0.1, ctx.currentTime);
     
     const lfoGain = ctx.createGain();
-    lfoGain.gain.setValueAtTime(100, ctx.currentTime); // sweep filter up/down by 100Hz
+    lfoGain.gain.setValueAtTime(100, ctx.currentTime);
 
-    // Modulate volume slightly for wobble
     const wobbleLfo = ctx.createOscillator();
-    wobbleLfo.frequency.setValueAtTime(4, ctx.currentTime); // 4Hz vibrato/tremolo
+    wobbleLfo.frequency.setValueAtTime(4, ctx.currentTime);
     
     const wobbleGain = ctx.createGain();
     wobbleGain.gain.setValueAtTime(0.05, ctx.currentTime);
@@ -424,23 +459,19 @@ window.SankalpTimer = {
     const tremolo = ctx.createGain();
     tremolo.gain.setValueAtTime(0.6, ctx.currentTime);
 
-    // Connect chord
     osc1.connect(filter);
     osc2.connect(filter);
     osc3.connect(filter);
     
-    // Connect filter through tremolo
     filter.connect(tremolo);
     tremolo.connect(outputNode);
 
-    // LFO routing
     lfo.connect(lfoGain);
     lfoGain.connect(filter.frequency);
 
     wobbleLfo.connect(wobbleGain);
     wobbleGain.connect(tremolo.gain);
 
-    // Start everything
     osc1.start();
     osc2.start();
     osc3.start();
@@ -454,11 +485,8 @@ window.SankalpTimer = {
     this.soundNodes.wobble = wobbleLfo;
   },
 
-  // 3. Zen Synthesizer: Deep ocean wind + random chime bells
   synthesizeZen(outputNode) {
     const ctx = this.audioCtx;
-    
-    // Wind noise
     const bufferSize = 4 * ctx.sampleRate;
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
@@ -475,14 +503,12 @@ window.SankalpTimer = {
     filter.frequency.setValueAtTime(120, ctx.currentTime);
     filter.Q.setValueAtTime(1.5, ctx.currentTime);
 
-    // Slowly modulate the filter frequency for wind swells
     const lfo = ctx.createOscillator();
-    lfo.frequency.setValueAtTime(0.05, ctx.currentTime); // 20s cycle
+    lfo.frequency.setValueAtTime(0.05, ctx.currentTime);
     
     const lfoGain = ctx.createGain();
     lfoGain.gain.setValueAtTime(50, ctx.currentTime);
 
-    // Connect wind
     noiseSource.connect(filter);
     filter.connect(outputNode);
     lfo.connect(lfoGain);
@@ -494,28 +520,24 @@ window.SankalpTimer = {
     this.soundNodes.source1 = noiseSource;
     this.soundNodes.lfo = lfo;
 
-    // Chime triggering loop
-    const frequencies = [523.25, 587.33, 659.25, 783.99, 880.00]; // C5, D5, E5, G5, A5 pentatonic chimes
+    const frequencies = [523.25, 587.33, 659.25, 783.99, 880.00];
     
     const triggerChime = () => {
       if (this.activeSound !== 'zen' || !this.isRunning) return;
 
       const freq = frequencies[Math.floor(Math.random() * frequencies.length)];
-      
       const osc = ctx.createOscillator();
       const chimeGain = ctx.createGain();
       
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, ctx.currentTime);
       
-      // Ring modulation note (creates bell harmonics)
       const ringOsc = ctx.createOscillator();
       ringOsc.frequency.setValueAtTime(freq * 1.5, ctx.currentTime);
       const ringGain = ctx.createGain();
       ringGain.gain.setValueAtTime(0.1, ctx.currentTime);
 
       chimeGain.gain.setValueAtTime(0.0, ctx.currentTime);
-      // Fade in quickly, decay slowly
       chimeGain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05);
       chimeGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 4.0);
 
@@ -527,22 +549,18 @@ window.SankalpTimer = {
       osc.start();
       ringOsc.start();
       
-      // Stop nodes after 4 seconds
       osc.stop(ctx.currentTime + 4.1);
       ringOsc.stop(ctx.currentTime + 4.1);
 
-      // Re-trigger chime after 5-10 seconds randomly
       const delay = Math.random() * 5000 + 4000;
-      this.soundNodes[`chime_${Date.now()}`] = osc; // track temporarily
+      this.soundNodes[`chime_${Date.now()}`] = osc;
       
       setTimeout(triggerChime, delay);
     };
 
-    // Trigger first chime after 3s
     setTimeout(triggerChime, 3000);
   },
 
-  // Completion Chime
   triggerCompletedSound() {
     this.initAudioContext();
     const ctx = this.audioCtx;
@@ -551,10 +569,10 @@ window.SankalpTimer = {
     const gain = ctx.createGain();
     
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15); // E5
-    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.3); // G5
-    osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.45); // C6
+    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15);
+    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.3);
+    osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.45);
 
     gain.gain.setValueAtTime(0, ctx.currentTime);
     gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.05);

@@ -7,14 +7,19 @@ window.Sankalp = {
 
   // Fetch full state from Express Backend
   async fetchState() {
+    const username = localStorage.getItem('sankalp_user');
+    if (!username) {
+      this.state = this.getFallbackState();
+      return this.state;
+    }
+
     try {
-      const response = await fetch('/api/state');
+      const response = await fetch(`/api/state?username=${encodeURIComponent(username)}`);
       if (!response.ok) throw new Error('API server unreachable.');
       this.state = await response.json();
       return this.state;
     } catch (err) {
       console.error('Failed to fetch state, falling back to local memory:', err);
-      // Fallback state if server has issues
       this.state = this.getFallbackState();
       return this.state;
     }
@@ -22,11 +27,14 @@ window.Sankalp = {
 
   // Save current state back to Express Backend
   async saveState() {
+    const username = localStorage.getItem('sankalp_user');
+    if (!username) return;
+
     try {
       const response = await fetch('/api/state', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.state)
+        body: JSON.stringify({ username, state: this.state })
       });
       if (!response.ok) throw new Error('Failed to save state.');
       
@@ -45,46 +53,63 @@ window.Sankalp = {
       user: { name: 'Champ', theme: 'dark', focusMinutes: 0, streakCount: 0, lastActiveDate: null },
       tasks: [],
       habits: [],
-      journal: {}
+      journal: {},
+      studyPlans: []
     };
   },
 
   // Initialize Application
   async init() {
-    // 1. Fetch data
+    // 1. Initialize Auth
+    if (window.SankalpAuth) window.SankalpAuth.init();
+    
+    // 2. Setup Mobile Sidebar drawer triggers
+    this.setupMobileSidebar();
+    
+    const username = localStorage.getItem('sankalp_user');
+    if (!username) {
+      // Hold initialization until user logs in successfully
+      return;
+    }
+
+    // 3. Fetch user state
     await this.fetchState();
     
-    // 2. Setup theme
+    // 4. Setup theme
     this.setupTheme();
     
-    // 3. Setup Navigation & Routing
+    // 5. Setup Navigation & Routing
     this.setupRouter();
     
-    // 4. Setup Dynamic Mouse Spotlight for Cards
+    // 6. Setup Dynamic Mouse Spotlight for Cards
     this.setupCardSpotlight();
     
-    // 5. Setup Greeting Editable Name
+    // 7. Setup Greeting Editable Name
     this.setupEditableGreeting();
 
-    // 6. Initialize specific modules
+    // 8. Initialize specific modules
     if (window.SankalpTasks) window.SankalpTasks.init();
     if (window.SankalpTimer) window.SankalpTimer.init();
     if (window.SankalpHabits) window.SankalpHabits.init();
     if (window.SankalpJournal) window.SankalpJournal.init();
     if (window.SankalpZen) window.SankalpZen.init();
+    if (window.SankalpStudy) window.SankalpStudy.init();
 
-    // 7. Render initial dashboard
+    // 9. Render initial dashboard
     this.renderDashboard();
     this.updateClock();
     setInterval(() => this.updateClock(), 1000);
     
-    this.showToast('⚡ Welcome to Sankalp Productivity Hub!', 'success');
+    this.showToast(`⚡ Welcome, ${username}! Let's make today productive.`, 'success');
   },
 
   // Page Navigation Router
   setupRouter() {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
+      // Skip the logout button click from swapping views
+      if (link.id === 'sidebar-logout-btn') return;
+
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const targetView = link.getAttribute('data-view');
@@ -126,6 +151,8 @@ window.Sankalp = {
       window.SankalpHabits.render();
     } else if (viewName === 'journal' && window.SankalpJournal) {
       window.SankalpJournal.render();
+    } else if (viewName === 'study' && window.SankalpStudy) {
+      window.SankalpStudy.render();
     }
   },
 
@@ -199,6 +226,34 @@ window.Sankalp = {
     });
   },
 
+  // Mobile navigation drawers
+  setupMobileSidebar() {
+    const burger = document.getElementById('mobile-hamburger-btn');
+    const sidebar = document.getElementById('app-sidebar');
+    const main = document.getElementById('app-main-content');
+    
+    if (burger && sidebar) {
+      burger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.toggle('mobile-active');
+      });
+      
+      // Close sidebar when clicking main content area
+      if (main) {
+        main.addEventListener('click', () => {
+          sidebar.classList.remove('mobile-active');
+        });
+      }
+      
+      // Close sidebar on clicking navigation link
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+          sidebar.classList.remove('mobile-active');
+        });
+      });
+    }
+  },
+
   // Clock Update
   updateClock() {
     const timeEl = document.querySelector('.dashboard-date-time');
@@ -264,9 +319,8 @@ window.Sankalp = {
     document.getElementById('stat-focus-val').textContent = `${this.state.user.focusMinutes}m`;
     
     // Streaks
-    // Calc streak: check habits active
     let maxStreak = 0;
-    this.state.habits.forEach(h => {
+    (this.state.habits || []).forEach(h => {
       if (h.streak > maxStreak) maxStreak = h.streak;
     });
     document.getElementById('stat-streak-val').textContent = maxStreak > 0 ? `${maxStreak}d` : '0d';
@@ -274,8 +328,13 @@ window.Sankalp = {
     // Mood Selector Integration
     this.renderDashboardMoodSelector();
 
+    // Render Study plans summary widget
+    if (window.SankalpStudy) {
+      window.SankalpStudy.renderDashboardSummary();
+    }
+
     // Today's summary list
-    const summaryList = document.querySelector('.tasks-summary-list');
+    const summaryList = document.querySelector('#dashboard-view .tasks-summary-list:not(#dashboard-study-summary)');
     if (summaryList) {
       summaryList.innerHTML = '';
       if (totalTasksCount === 0) {
@@ -286,9 +345,9 @@ window.Sankalp = {
           item.className = `task-summary-item ${task.completed ? 'completed' : ''}`;
           
           let priorityClass = '';
-          if (task.priority === 'high') priorityClass = 'background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); border: 1px solid rgba(239, 68, 68, 0.3)';
-          else if (task.priority === 'medium') priorityClass = 'background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); border: 1px solid rgba(245, 158, 11, 0.3)';
-          else priorityClass = 'background: rgba(16, 185, 129, 0.15); color: var(--accent-success); border: 1px solid rgba(16, 185, 129, 0.3)';
+          if (task.priority === 'high') priorityClass = 'background: rgba(239, 68, 68, 0.12); color: var(--accent-danger); border: 1px solid rgba(239, 68, 68, 0.25)';
+          else if (task.priority === 'medium') priorityClass = 'background: rgba(251, 191, 36, 0.12); color: var(--accent-warning); border: 1px solid rgba(251, 191, 36, 0.25)';
+          else priorityClass = 'background: rgba(52, 211, 153, 0.12); color: var(--accent-success); border: 1px solid rgba(52, 211, 153, 0.25)';
 
           item.innerHTML = `
             <div class="task-summary-left">
@@ -307,7 +366,7 @@ window.Sankalp = {
 
   renderDashboardMoodSelector() {
     const todayStr = new Date().toISOString().split('T')[0];
-    const journalEntry = this.state.journal[todayStr] || {};
+    const journalEntry = (this.state.journal || {})[todayStr] || {};
     const selectedMood = journalEntry.mood || '';
 
     const moodBtns = document.querySelectorAll('.mood-btn');
@@ -321,6 +380,7 @@ window.Sankalp = {
 
       // Handle clicking
       btn.onclick = () => {
+        if (!this.state.journal) this.state.journal = {};
         if (!this.state.journal[todayStr]) {
           this.state.journal[todayStr] = { mood: '', morning: '', evening: '' };
         }
@@ -364,7 +424,7 @@ window.Sankalp = {
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
-        z-index: 10000;
+        z-index: 100000;
         pointer-events: none;
       `;
       document.body.appendChild(container);
@@ -384,7 +444,7 @@ window.Sankalp = {
       font-weight: 500;
       color: var(--text-primary);
       border-left: 4px solid ${accentColor};
-      background: rgba(18, 14, 38, 0.85);
+      background: var(--panel-bg);
       pointer-events: auto;
       transform: translateX(100px);
       opacity: 0;

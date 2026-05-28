@@ -475,3 +475,85 @@ body {
     transform: translateY(-10px);
   }
 }
+
+/* Responsive Mobile & Tablet Viewports */
+@media (max-width: 768px) {
+  #mobile-hamburger-btn {
+    display: flex !important;
+  }
+  
+  .app-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .sidebar.mobile-active {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    padding: 6rem 1.5rem 2.5rem 1.5rem; /* Space for top mobile burger */
+  }
+
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .view-title-container h1 {
+    font-size: 1.8rem;
+  }
+  
+  .glass-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .modal-container {
+    padding: 1.5rem;
+  }
+}
+
+/* Fullscreen Focus mode overrides */
+.fullscreen-focus-mode {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 999999 !important;
+  background: radial-gradient(circle at center, #070a13 0%, #020306 100%) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 2rem !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.fullscreen-focus-mode .clock-container {
+  width: 340px !important;
+  height: 340px !important;
+  margin-bottom: 2.5rem !important;
+}
+
+.fullscreen-focus-mode .clock-time {
+  font-size: 5.5rem !important;
+}
+
+.fullscreen-focus-mode .timer-presets {
+  margin-top: 1rem !important;
+  margin-bottom: 2.5rem !important;
+}
+
