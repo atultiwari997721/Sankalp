@@ -240,6 +240,12 @@
             <h3 class="mood-title">Completion</h3>
             <div class="ring-container">
               <svg class="ring-svg" viewBox="0 0 160 160" width="150" height="150">
+                <defs>
+                  <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="var(--accent-primary)" />
+                    <stop offset="100%" stop-color="var(--accent-secondary)" />
+                  </linearGradient>
+                </defs>
                 <circle class="ring-bg" cx="80" cy="80" r="70"/>
                 <circle class="ring-progress" cx="80" cy="80" r="70"/>
               </svg>
@@ -286,7 +292,7 @@
           </div>
 
           <!-- Study Planner Dashboard Widget -->
-          <div class="today-tasks-summary-card glass-panel glow-card" style="grid-column: span 6;">
+          <div class="today-tasks-summary-card glass-panel glow-card">
             <div class="tasks-summary-header">
               <h3 style="font-family: var(--font-heading); font-size: 1.25rem;">Upcoming Study Target Plans</h3>
               <button class="glass-btn" onclick="window.Sankalp.switchView('study')">Study Hub &rarr;</button>
@@ -297,7 +303,7 @@
           </div>
           
           <!-- Today's Task Overview List -->
-          <div class="today-tasks-summary-card glass-panel glow-card" style="grid-column: span 6;">
+          <div class="today-tasks-summary-card glass-panel glow-card">
             <div class="tasks-summary-header">
               <h3 style="font-family: var(--font-heading); font-size: 1.25rem;">Today's Focus Tasks</h3>
               <button class="glass-btn" onclick="window.Sankalp.switchView('tasks')">Task List &rarr;</button>

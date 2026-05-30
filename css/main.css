@@ -385,16 +385,19 @@ body {
 }
 
 [data-theme="light"] .glass-btn {
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(0, 0, 0, 0.05);
   color: var(--text-primary);
+  border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 [data-theme="light"] .glass-btn:hover {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.08);
+  border-color: var(--accent-primary);
 }
 
 [data-theme="light"] .glass-btn.btn-primary {
   color: #ffffff;
+  border: none;
 }
 
 /* Glass Inputs */

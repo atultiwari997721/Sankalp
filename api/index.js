@@ -4,6 +4,9 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
+const dns = require('dns');
+
+dns.setDefaultResultOrder('ipv4first');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -413,6 +416,11 @@ app.post('/api/state', async (req, res) => {
   }
 });
 
+function cleanJsonString(str) {
+  if (!str) return '';
+  return str.replace(/^```(json)?\s*/i, '').replace(/```\s*$/, '').trim();
+}
+
 // Saarthi AI generation API
 app.post('/api/saarthi/generate', async (req, res) => {
   try {
@@ -423,67 +431,136 @@ app.post('/api/saarthi/generate', async (req, res) => {
 
     const targetDays = parseInt(days) || 10;
     const finalApiKey = apiKey || process.env.GEMINI_API_KEY;
+    let generatedPlansText = null;
 
     if (finalApiKey) {
-      // Call Google Gemini API
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${finalApiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `You are Saarthi, a friendly syllabus planner assistant.
-                  Take this subject: "${subject}"
-                  Syllabus details/User goals: "${prompt}"
-                  Target days: ${targetDays}
-
-                  Split the syllabus into exactly ${targetDays} day-by-day learning plans.
-                  For each day, provide:
-                  - topic: A specific subtopic to learn.
-                  - hours: Study hours required (between 1 and 4).
-                  - subtasks: A list of 3 checklist task strings. Detail the study goals, video lectures references, and practice QA problems.
-                    Example checklist tasks:
-                    1. "Watch YouTube lecture on ${subject} fundamentals"
-                    2. "Read MIT OCW study guide notes"
-                    3. "Solve 3 practice coding questions on LeetCode"
-
-                  Output ONLY a valid JSON object matching this structure:
+      try {
+        // Call Google Gemini API
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${finalApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
                   {
-                    "plans": [
-                      {
-                        "day": 1,
-                        "subject": "${subject}",
-                        "topic": "Topic Name",
-                        "hours": 2,
-                        "subtasks": ["Checklist item 1", "Checklist item 2", "Checklist item 3"]
-                      }
-                    ]
+                    text: `You are Saarthi, a friendly syllabus planner assistant.
+Take this subject: "${subject}"
+Syllabus details/User goals: "${prompt}"
+Target days: ${targetDays}
+
+Split the syllabus into exactly ${targetDays} day-by-day learning plans.
+For each day, provide:
+- topic: A specific subtopic to learn.
+- hours: Study hours required (between 1 and 4).
+- subtasks: A list of 3 checklist task strings. Detail the study goals, video lectures references, and practice QA problems.
+  Example checklist tasks:
+  1. "Watch YouTube lecture on ${subject} fundamentals"
+  2. "Read MIT OCW study guide notes"
+  3. "Solve 3 practice coding questions on LeetCode"
+
+Output ONLY a valid JSON object matching this structure:
+{
+  "plans": [
+    {
+      "day": 1,
+      "subject": "${subject}",
+      "topic": "Topic Name",
+      "hours": 2,
+      "subtasks": ["Checklist item 1", "Checklist item 2", "Checklist item 3"]
+    }
+  ]
+}
+Ensure you return ONLY raw JSON matching this structure. Do not wrap in markdown or block backticks.`
                   }
-                  Ensure you return ONLY raw JSON matching this structure. Do not wrap in markdown or block backticks.`
-                }
-              ]
+                ]
+              }
+            ],
+            generationConfig: {
+              responseMimeType: "application/json"
             }
-          ],
-          generationConfig: {
-            responseMimeType: "application/json"
-          }
-        })
-      });
+          })
+        });
 
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error?.message || 'Gemini API call failed');
-      }
-
-      const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (generatedText) {
-        return res.json(JSON.parse(generatedText));
+        const result = await response.json();
+        if (response.ok && result.candidates?.[0]?.content?.parts?.[0]?.text) {
+          generatedPlansText = result.candidates[0].content.parts[0].text;
+        } else {
+          console.warn('Gemini API call failed, falling back to Pollinations AI:', result.error?.message || 'Unknown error');
+        }
+      } catch (geminiErr) {
+        console.warn('Gemini API connection error, falling back to Pollinations AI:', geminiErr.message);
       }
     }
 
-    // Heuristic Local Fallback if no API key is present
+    // Call Pollinations AI if Gemini wasn't used or failed
+    if (!generatedPlansText) {
+      try {
+        console.log('Attempting study roadmap generation using Pollinations AI keyless API...');
+        const response = await fetch('https://text.pollinations.ai/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'user',
+                content: `You are Saarthi, a friendly syllabus planner assistant.
+Take this subject: "${subject}"
+Syllabus details/User goals: "${prompt}"
+Target days: ${targetDays}
+
+Split the syllabus into exactly ${targetDays} day-by-day learning plans.
+For each day, provide:
+- topic: A specific subtopic to learn.
+- hours: Study hours required (between 1 and 4).
+- subtasks: A list of 3 checklist task strings. Detail the study goals, video lectures references, and practice QA problems.
+  Example checklist tasks:
+  1. "Watch YouTube lecture on ${subject} fundamentals"
+  2. "Read MIT OCW study guide notes"
+  3. "Solve 3 practice coding questions on LeetCode"
+
+Output ONLY a valid JSON object matching this structure:
+{
+  "plans": [
+    {
+      "day": 1,
+      "subject": "${subject}",
+      "topic": "Topic Name",
+      "hours": 2,
+      "subtasks": ["Checklist item 1", "Checklist item 2", "Checklist item 3"]
+    }
+  ]
+}
+Ensure you return ONLY raw JSON matching this structure. Do not wrap in markdown or block backticks.`
+              }
+            ],
+            json: true
+          })
+        });
+
+        if (response.ok) {
+          generatedPlansText = await response.text();
+        } else {
+          console.warn(`Pollinations AI failed with status: ${response.status}`);
+        }
+      } catch (pollinationsErr) {
+        console.warn('Pollinations AI connection error, falling back to local heuristic:', pollinationsErr.message);
+      }
+    }
+
+    if (generatedPlansText) {
+      try {
+        const cleanText = cleanJsonString(generatedPlansText);
+        const parsedData = JSON.parse(cleanText);
+        if (parsedData && Array.isArray(parsedData.plans)) {
+          return res.json(parsedData);
+        }
+      } catch (parseErr) {
+        console.error('Failed to parse AI generated plans JSON:', parseErr.message, 'Raw text:', generatedPlansText);
+      }
+    }
+
+    // Heuristic Local Fallback if no API key is present and AI calls both failed
     const topics = prompt.split(/[,;\n]+/).map(t => t.trim()).filter(t => t.length > 0);
     const mockPlans = [];
     const subjectsList = topics.length > 0 ? topics : ['Core concepts', 'Practical implementation', 'Revision and Mock Q&A'];

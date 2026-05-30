@@ -72,7 +72,7 @@
   --accent-tertiary: #db2777;
   
   --glass-shadow: 0 12px 40px 0 rgba(148, 163, 184, 0.08);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+  --glass-border: 1px solid rgba(0, 0, 0, 0.08);
   
   --glow-shadow-indigo: 0 0 20px rgba(96, 165, 250, 0.15);
   --glow-shadow-purple: 0 0 20px rgba(192, 132, 252, 0.15);

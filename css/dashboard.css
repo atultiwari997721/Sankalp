@@ -219,6 +219,11 @@
   transition: stroke-dashoffset var(--transition-slow);
 }
 
+.ring-progress.complete {
+  stroke: var(--accent-success) !important;
+  filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.5));
+}
+
 .ring-text {
   position: absolute;
   inset: 0;
@@ -352,8 +357,14 @@
 
 /* Today's Tasks Summary */
 .today-tasks-summary-card {
-  grid-column: span 12;
+  grid-column: span 6;
   padding: 1.8rem;
+}
+
+@media (max-width: 900px) {
+  .today-tasks-summary-card {
+    grid-column: span 12;
+  }
 }
 
 .tasks-summary-header {
@@ -369,6 +380,25 @@
   gap: 0.75rem;
   max-height: 250px;
   overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Custom mini scrollbar for the summary lists */
+.tasks-summary-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.tasks-summary-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tasks-summary-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-full);
+}
+
+[data-theme="light"] .tasks-summary-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .task-summary-item {
@@ -455,5 +485,29 @@
   
   .mood-name {
     font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tasks-summary-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .tasks-summary-header button {
+    width: auto;
+    align-self: flex-start;
+  }
+  .task-summary-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+  }
+  .task-summary-meta {
+    align-self: flex-end;
+  }
+  .stat-card {
+    grid-column: span 12;
   }
 }

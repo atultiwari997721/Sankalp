@@ -132,11 +132,23 @@
   transition: all var(--transition-fast);
 }
 
+[data-theme="light"] .chip-suggestion {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: var(--text-secondary);
+}
+
 .chip-suggestion:hover {
   background: rgba(255, 255, 255, 0.06);
   border-color: var(--accent-primary);
   color: var(--text-primary);
   transform: translateY(-1px);
+}
+
+[data-theme="light"] .chip-suggestion:hover {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
 }
 
 /* Typing Indicators */

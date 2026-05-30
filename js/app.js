@@ -316,11 +316,26 @@ window.Sankalp = {
 
     // Update circular ring
     const ringProgressEl = document.querySelector('.ring-progress');
-    const ringPercentEl = document.querySelector('.ring-percent');
-    if (ringProgressEl && ringPercentEl) {
-      ringPercentEl.textContent = `${tasksPercent}%`;
+    const ringTextEl = document.querySelector('.ring-text');
+    if (ringProgressEl && ringTextEl) {
       const offset = 440 - (440 * tasksPercent) / 100;
       ringProgressEl.style.strokeDashoffset = offset;
+
+      if (tasksPercent === 100) {
+        ringProgressEl.classList.add('complete');
+        ringTextEl.innerHTML = `
+          <svg class="ring-tick-icon" viewBox="0 0 24 24" width="48" height="48" stroke="var(--accent-success)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.3)); margin-bottom: 0.25rem;">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span class="ring-percent-label" style="color: var(--accent-success); font-weight: 700;">Completed</span>
+        `;
+      } else {
+        ringProgressEl.classList.remove('complete');
+        ringTextEl.innerHTML = `
+          <span class="ring-percent">${tasksPercent}%</span>
+          <span class="ring-percent-label">Productive</span>
+        `;
+      }
     }
 
     // Stats values
