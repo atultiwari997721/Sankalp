@@ -349,9 +349,6 @@ window.Sankalp = {
     });
     document.getElementById('stat-streak-val').textContent = maxStreak > 0 ? `${maxStreak}d` : '0d';
 
-    // Mood Selector Integration
-    this.renderDashboardMoodSelector();
-
     // Render Study plans summary widget
     if (window.SankalpStudy) {
       window.SankalpStudy.renderDashboardSummary();

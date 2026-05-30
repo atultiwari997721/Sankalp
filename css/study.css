@@ -81,6 +81,11 @@
   transition: all var(--transition-fast);
 }
 
+[data-theme="light"] .study-action-btn {
+  background: rgba(168, 85, 247, 0.04);
+  border-color: rgba(168, 85, 247, 0.2);
+}
+
 .study-action-btn svg {
   width: 16px;
   height: 16px;
@@ -89,12 +94,25 @@
   stroke-width: 2;
 }
 
+[data-theme="light"] .study-action-btn svg {
+  stroke: #7c3aed;
+}
+
 .study-action-btn:hover {
   background: rgba(239, 68, 68, 0.15);
   border-color: var(--accent-danger);
 }
 
+[data-theme="light"] .study-action-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--accent-danger);
+}
+
 .study-action-btn:hover svg {
+  stroke: var(--accent-danger);
+}
+
+[data-theme="light"] .study-action-btn:hover svg {
   stroke: var(--accent-danger);
 }
 

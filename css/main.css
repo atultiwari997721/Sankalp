@@ -384,20 +384,26 @@ body {
   box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
 }
 
-[data-theme="light"] .glass-btn {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--text-primary);
-  border: 1px solid rgba(0, 0, 0, 0.12);
+[data-theme="light"] .glass-btn:not(.btn-primary) {
+  background: rgba(168, 85, 247, 0.06);
+  color: #7c3aed;
+  border: 1px solid rgba(168, 85, 247, 0.25);
 }
 
-[data-theme="light"] .glass-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  border-color: var(--accent-primary);
+[data-theme="light"] .glass-btn:not(.btn-primary):hover {
+  background: rgba(168, 85, 247, 0.12);
+  border-color: #7c3aed;
+  color: #6d28d9;
 }
 
 [data-theme="light"] .glass-btn.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
   color: #ffffff;
   border: none;
+}
+
+[data-theme="light"] .glass-btn.btn-primary:hover {
+  background: linear-gradient(135deg, var(--accent-primary) 20%, var(--accent-secondary) 120%);
 }
 
 /* Glass Inputs */

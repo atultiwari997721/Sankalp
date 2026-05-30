@@ -78,7 +78,7 @@
 
 /* Stats Cards */
 .stat-card {
-  grid-column: span 3;
+  grid-column: span 4;
   padding: 1.5rem;
   display: flex;
   align-items: center;
