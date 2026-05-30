@@ -501,6 +501,12 @@
               <button class="color-dot" data-color="cyan" style="background: #38bdf8; border: 2px solid transparent; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; padding: 0; transition: transform var(--transition-fast);" title="Sky Blue"></button>
               <button class="color-dot" data-color="green" style="background: #34d399; border: 2px solid transparent; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; padding: 0; transition: transform var(--transition-fast);" title="Sage Green"></button>
               <button class="color-dot" data-color="amber" style="background: #fbbf24; border: 2px solid transparent; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; padding: 0; transition: transform var(--transition-fast);" title="Honey Amber"></button>
+              
+              <!-- Custom color picker dot -->
+              <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 18px; height: 18px;">
+                <input type="color" id="custom-color-picker" style="position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 10; padding: 0; border: none;" title="Custom Color Picker">
+                <button class="color-dot" id="custom-color-dot" data-color="custom" style="background: linear-gradient(135deg, red, orange, yellow, green, blue, purple); border: 2px solid transparent; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; padding: 0; transition: transform var(--transition-fast);" title="Custom Color Picker"></button>
+              </div>
             </div>
 
             <!-- Mode Switchers -->

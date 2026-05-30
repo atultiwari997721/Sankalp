@@ -13,6 +13,14 @@ window.SankalpTimer = {
   localPipEl: null,
   clockDesign: 'ring',
   clockColor: 'blue',
+  customColorVal: null,
+  nativeWidth: 320,
+  nativeHeight: 350,
+  localWidth: 240,
+  localHeight: 290,
+  localTop: null,
+  localLeft: null,
+  localResizeObserver: null,
   
   // Audio Synthesizer variables
   audioCtx: null,
@@ -20,8 +28,32 @@ window.SankalpTimer = {
   soundNodes: {},    // Map of active Web Audio nodes
 
   init() {
+    this.loadPipSettings();
     this.setupListeners();
     this.resetTimer();
+
+    // Apply loaded state to clock
+    this.setClockDesign(this.clockDesign);
+    this.setClockColor(this.clockColor);
+
+    // Sync design button active states in UI
+    const designBtns = document.querySelectorAll('.clock-design-switcher .design-btn');
+    designBtns.forEach(btn => {
+      if (btn.getAttribute('data-design') === this.clockDesign) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    // Sync custom color inputs in UI
+    if (this.clockColor === 'custom' && this.customColorVal) {
+      const customDot = document.getElementById('custom-color-dot');
+      if (customDot) customDot.style.background = this.customColorVal;
+      
+      const customPicker = document.getElementById('custom-color-picker');
+      if (customPicker) customPicker.value = this.customColorVal;
+    }
   },
 
   setupListeners() {
@@ -114,9 +146,23 @@ window.SankalpTimer = {
     const colorDots = document.querySelectorAll('.clock-color-switcher .color-dot');
     colorDots.forEach(dot => {
       dot.addEventListener('click', () => {
-        this.setClockColor(dot.getAttribute('data-color'));
+        const colorName = dot.getAttribute('data-color');
+        if (colorName !== 'custom') {
+          this.setClockColor(colorName);
+        }
       });
     });
+
+    // Custom Color Picker
+    const customColorPicker = document.getElementById('custom-color-picker');
+    if (customColorPicker) {
+      customColorPicker.addEventListener('input', (e) => {
+        this.setCustomClockColor(e.target.value);
+      });
+      customColorPicker.addEventListener('change', (e) => {
+        this.setCustomClockColor(e.target.value);
+      });
+    }
 
     // Sound Cards
     const soundCards = document.querySelectorAll('.sound-card');
@@ -749,6 +795,7 @@ window.SankalpTimer = {
     }
 
     this.updateClockUI();
+    this.savePipSettings();
   },
 
   async togglePiP() {
@@ -764,9 +811,10 @@ window.SankalpTimer = {
 
     if ('documentPictureInPicture' in window) {
       try {
+        const designSettings = this.getDesignSettings(this.clockDesign);
         const pipWindow = await window.documentPictureInPicture.requestWindow({
-          width: 320,
-          height: 350,
+          width: designSettings.nativeWidth || 320,
+          height: designSettings.nativeHeight || 350,
         });
         this.pipWindow = pipWindow;
 
@@ -823,7 +871,8 @@ window.SankalpTimer = {
             overflow: hidden;
           }
           .pip-container .clock-container {
-            transform: none !important;
+            transform: scale(var(--pip-zoom, 1)) !important;
+            transform-origin: center !important;
             margin-bottom: 0px !important;
             height: 80vmin !important;
             width: 80vmin !important;
@@ -942,6 +991,7 @@ window.SankalpTimer = {
 
         const pipContainer = pipWindow.document.createElement('div');
         pipContainer.className = 'pip-container';
+        pipContainer.style.setProperty('--pip-zoom', designSettings.zoom || 1.0);
         pipContainer.innerHTML = `
           <div class="clock-container design-${this.clockDesign}">
             <svg class="clock-svg" viewBox="0 0 280 280">
@@ -967,6 +1017,12 @@ window.SankalpTimer = {
             <button class="pip-btn" id="pip-reset" title="Reset">
               <svg viewBox="0 0 24 24"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2L2.5 8m0 8l.7.8A10 10 0 0 0 20.8 16.8l.7-.8"/></svg>
             </button>
+            <button class="pip-btn" id="pip-zoom-out" title="Zoom Out">
+              <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="pip-btn" id="pip-zoom-in" title="Zoom In">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
           </div>
         `;
 
@@ -974,6 +1030,38 @@ window.SankalpTimer = {
 
         pipContainer.querySelector('#pip-play-pause').addEventListener('click', () => this.toggleTimer());
         pipContainer.querySelector('#pip-reset').addEventListener('click', () => this.resetTimer());
+        
+        pipContainer.querySelector('#pip-zoom-in').addEventListener('click', () => {
+          const settings = this.getDesignSettings(this.clockDesign);
+          this.updateZoom((settings.zoom || 1.0) + 0.1);
+        });
+        pipContainer.querySelector('#pip-zoom-out').addEventListener('click', () => {
+          const settings = this.getDesignSettings(this.clockDesign);
+          this.updateZoom((settings.zoom || 1.0) - 0.1);
+        });
+
+        pipContainer.addEventListener('wheel', (e) => {
+          e.preventDefault();
+          const settings = this.getDesignSettings(this.clockDesign);
+          let currentZoom = settings.zoom || 1.0;
+          if (e.deltaY < 0) {
+            this.updateZoom(Math.min(2.5, currentZoom + 0.05));
+          } else {
+            this.updateZoom(Math.max(0.5, currentZoom - 0.05));
+          }
+        }, { passive: false });
+
+        let resizeTimeout;
+        pipWindow.addEventListener('resize', () => {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            const currentDesign = this.clockDesign;
+            const settings = this.getDesignSettings(currentDesign);
+            settings.nativeWidth = pipWindow.innerWidth;
+            settings.nativeHeight = pipWindow.innerHeight;
+            this.savePipSettings();
+          }, 200);
+        });
 
         this.updateClockUI();
         this.updateControlsUI();
@@ -994,6 +1082,10 @@ window.SankalpTimer = {
 
   toggleLocalOverlayPiP() {
     if (this.localPipEl) {
+      if (this.localResizeObserver) {
+        this.localResizeObserver.disconnect();
+        this.localResizeObserver = null;
+      }
       this.localPipEl.remove();
       this.localPipEl = null;
       return;
@@ -1004,15 +1096,36 @@ window.SankalpTimer = {
       this.pipWindow = null;
     }
 
+    const designSettings = this.getDesignSettings(this.clockDesign);
     const pipContainer = document.createElement('div');
     pipContainer.id = 'pomodoro-local-pip';
     pipContainer.className = 'glass-panel glow-card';
     
     pipContainer.style.position = 'fixed';
-    pipContainer.style.bottom = '2rem';
-    pipContainer.style.right = '2rem';
-    pipContainer.style.width = '240px';
-    pipContainer.style.height = '290px';
+    
+    if (designSettings.localTop !== null && designSettings.localLeft !== null) {
+      let topVal = parseFloat(designSettings.localTop);
+      let leftVal = parseFloat(designSettings.localLeft);
+      if (isNaN(topVal)) topVal = 100;
+      if (isNaN(leftVal)) leftVal = 100;
+      if (topVal < 0) topVal = 0;
+      if (leftVal < 0) leftVal = 0;
+      if (topVal > window.innerHeight - 100) topVal = window.innerHeight - 100;
+      if (leftVal > window.innerWidth - 100) leftVal = window.innerWidth - 100;
+      
+      pipContainer.style.top = topVal + 'px';
+      pipContainer.style.left = leftVal + 'px';
+      pipContainer.style.bottom = 'auto';
+      pipContainer.style.right = 'auto';
+    } else {
+      pipContainer.style.bottom = '2rem';
+      pipContainer.style.right = '2rem';
+    }
+
+    pipContainer.style.width = (designSettings.localWidth || 240) + 'px';
+    pipContainer.style.height = (designSettings.localHeight || 290) + 'px';
+    pipContainer.style.setProperty('--pip-zoom', designSettings.zoom || 1.0);
+    
     pipContainer.style.zIndex = '99999';
     pipContainer.style.display = 'flex';
     pipContainer.style.flexDirection = 'column';
@@ -1030,12 +1143,12 @@ window.SankalpTimer = {
         </button>
       </div>
 
-      <div class="clock-container design-${this.clockDesign}" style="transform: scale(0.68); margin-top: 1rem; margin-bottom: 0px; height: 200px; width: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div class="clock-container design-${this.clockDesign}">
         <svg class="clock-svg" viewBox="0 0 280 280">
-          <circle class="clock-bg" cx="140" cy="140" r="130" />
-          <circle class="clock-progress" cx="140" cy="140" r="130" stroke="url(#timer-gradient)" />
+          <circle class="clock-bg" cx="140" cy="140" r="130" fill="none" />
+          <circle class="clock-progress" cx="140" cy="140" r="130" stroke="url(#timer-gradient)" fill="none" />
         </svg>
-        <div class="clock-face" style="top:0; left:0; width:100%; height:100%;">
+        <div class="clock-face">
           <div class="clock-time">25:00</div>
           <div class="clock-state-label">Focus Session</div>
         </div>
@@ -1046,8 +1159,14 @@ window.SankalpTimer = {
 
       <div class="pip-controls" style="display: flex; gap: 1rem; margin-top: 0.2rem; z-index: 10;">
         <button class="control-btn" id="local-pip-play-pause" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); color: #7c3aed; cursor: pointer;"></button>
-        <button class="control-btn" id="local-pip-reset" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: var(--glass-border); cursor: pointer;">
+        <button class="control-btn" id="local-pip-reset" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: var(--glass-border); cursor: pointer;" title="Reset">
           <svg viewBox="0 0 24 24" width="16" height="16" stroke="var(--text-primary)" stroke-width="2" fill="none"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2L2.5 8m0 8l.7.8A10 10 0 0 0 20.8 16.8l.7-.8"/></svg>
+        </button>
+        <button class="control-btn" id="local-pip-zoom-out" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: var(--glass-border); cursor: pointer;" title="Zoom Out">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="var(--text-primary)" stroke-width="2" fill="none"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button class="control-btn" id="local-pip-zoom-in" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: var(--glass-border); cursor: pointer;" title="Zoom In">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="var(--text-primary)" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
       </div>
     `;
@@ -1063,6 +1182,42 @@ window.SankalpTimer = {
 
     pipContainer.querySelector('#local-pip-play-pause').addEventListener('click', () => this.toggleTimer());
     pipContainer.querySelector('#local-pip-reset').addEventListener('click', () => this.resetTimer());
+
+    pipContainer.querySelector('#local-pip-zoom-in').addEventListener('click', () => {
+      const settings = this.getDesignSettings(this.clockDesign);
+      this.updateZoom((settings.zoom || 1.0) + 0.1);
+    });
+    pipContainer.querySelector('#local-pip-zoom-out').addEventListener('click', () => {
+      const settings = this.getDesignSettings(this.clockDesign);
+      this.updateZoom((settings.zoom || 1.0) - 0.1);
+    });
+
+    pipContainer.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const settings = this.getDesignSettings(this.clockDesign);
+      let currentZoom = settings.zoom || 1.0;
+      if (e.deltaY < 0) {
+        this.updateZoom(Math.min(2.5, currentZoom + 0.05));
+      } else {
+        this.updateZoom(Math.max(0.5, currentZoom - 0.05));
+      }
+    }, { passive: false });
+
+    let resizeTimeout;
+    this.localResizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const el = entry.target;
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          const currentDesign = this.clockDesign;
+          const settings = this.getDesignSettings(currentDesign);
+          settings.localWidth = el.offsetWidth;
+          settings.localHeight = el.offsetHeight;
+          this.savePipSettings();
+        }, 200);
+      }
+    });
+    this.localResizeObserver.observe(pipContainer);
 
     this.updateClockUI();
     this.updateControlsUI();
@@ -1115,6 +1270,13 @@ window.SankalpTimer = {
       document.onmouseup = null;
       document.onmousemove = null;
       elmnt.style.cursor = 'grab';
+      
+      const timerObj = window.SankalpTimer;
+      const currentDesign = timerObj.clockDesign;
+      const settings = timerObj.getDesignSettings(currentDesign);
+      settings.localTop = elmnt.style.top;
+      settings.localLeft = elmnt.style.left;
+      timerObj.savePipSettings();
     }
 
     function dragTouchStart(e) {
@@ -1152,11 +1314,29 @@ window.SankalpTimer = {
     function closeDragTouch() {
       document.ontouchend = null;
       document.ontouchmove = null;
+      
+      const timerObj = window.SankalpTimer;
+      const currentDesign = timerObj.clockDesign;
+      const settings = timerObj.getDesignSettings(currentDesign);
+      settings.localTop = elmnt.style.top;
+      settings.localLeft = elmnt.style.left;
+      timerObj.savePipSettings();
     }
   },
 
   setClockColor(colorName) {
+    if (colorName === 'custom') {
+      this.setCustomClockColor(this.customColorVal || '#60a5fa');
+      return;
+    }
+
     this.clockColor = colorName;
+    
+    // Restore custom color dot to rainbow gradient if switching back to presets
+    const customDot = document.getElementById('custom-color-dot');
+    if (customDot) {
+      customDot.style.background = 'linear-gradient(135deg, red, orange, yellow, green, blue, purple)';
+    }
     
     const colorMapping = {
       blue: { primary: '#60a5fa', secondary: '#a5f3fc' },
@@ -1217,5 +1397,176 @@ window.SankalpTimer = {
         stops[1].setAttribute('stop-color', colors.secondary);
       }
     }
+    this.savePipSettings();
+  },
+
+  setCustomClockColor(hexColor) {
+    this.clockColor = 'custom';
+    this.customColorVal = hexColor;
+    
+    const primaryColor = hexColor;
+    const secondaryColor = this.adjustColorBrightness(hexColor, 40);
+
+    // Apply active class & custom background to the custom picker dot
+    const dots = document.querySelectorAll('.clock-color-switcher .color-dot');
+    dots.forEach(dot => {
+      const dotColor = dot.getAttribute('data-color');
+      if (dotColor === 'custom') {
+        dot.style.borderColor = 'var(--text-primary)';
+        dot.classList.add('active');
+        dot.style.boxShadow = `0 0 10px ${primaryColor}`;
+        dot.style.background = primaryColor; // update rainbow dot to chosen custom hex color!
+      } else {
+        dot.style.borderColor = 'transparent';
+        dot.classList.remove('active');
+        dot.style.boxShadow = 'none';
+      }
+    });
+
+    // Apply custom colors locally to Main Clock Containers
+    const clockContainers = document.querySelectorAll('.clock-container');
+    clockContainers.forEach(container => {
+      container.style.setProperty('--accent-primary', primaryColor);
+      container.style.setProperty('--accent-secondary', secondaryColor);
+      container.style.setProperty('--glow-color', primaryColor);
+    });
+
+    // Apply custom colors to local PiP overlay
+    if (this.localPipEl) {
+      const pipClock = this.localPipEl.querySelector('.clock-container');
+      if (pipClock) {
+        pipClock.style.setProperty('--accent-primary', primaryColor);
+        pipClock.style.setProperty('--accent-secondary', secondaryColor);
+        pipClock.style.setProperty('--glow-color', primaryColor);
+      }
+    }
+
+    // Apply custom colors to native PiP window
+    if (this.pipWindow) {
+      const pipClock = this.pipWindow.document.querySelector('.clock-container');
+      if (pipClock) {
+        pipClock.style.setProperty('--accent-primary', primaryColor);
+        pipClock.style.setProperty('--accent-secondary', secondaryColor);
+        pipClock.style.setProperty('--glow-color', primaryColor);
+      }
+      
+      const stops = this.pipWindow.document.querySelectorAll('#timer-gradient-pip stop');
+      if (stops.length >= 2) {
+        stops[0].setAttribute('stop-color', primaryColor);
+        stops[1].setAttribute('stop-color', secondaryColor);
+      }
+    }
+    this.savePipSettings();
+  },
+
+  adjustColorBrightness(hex, percent) {
+    let R = parseInt(hex.substring(1,3), 16);
+    let G = parseInt(hex.substring(3,5), 16);
+    let B = parseInt(hex.substring(5,7), 16);
+
+    R = parseInt(R * (100 + percent) / 100);
+    G = parseInt(G * (100 + percent) / 100);
+    B = parseInt(B * (100 + percent) / 100);
+
+    R = (R < 255) ? R : 255;
+    G = (G < 255) ? G : 255;
+    B = (B < 255) ? B : 255;
+
+    const rHex = R.toString(16).padStart(2, '0');
+    const gHex = G.toString(16).padStart(2, '0');
+    const bHex = B.toString(16).padStart(2, '0');
+
+    return `#${rHex}${gHex}${bHex}`;
+  },
+
+  savePipSettings() {
+    const settings = {
+      clockDesign: this.clockDesign,
+      clockColor: this.clockColor,
+      customColorVal: this.customColorVal,
+      designs: this.pipDesigns || {
+        ring: { nativeWidth: 320, nativeHeight: 350, localWidth: 240, localHeight: 290, localTop: null, localLeft: null, zoom: 1.0 },
+        digital: { nativeWidth: 320, nativeHeight: 250, localWidth: 240, localHeight: 180, localTop: null, localLeft: null, zoom: 1.0 },
+        hourglass: { nativeWidth: 320, nativeHeight: 250, localWidth: 240, localHeight: 180, localTop: null, localLeft: null, zoom: 1.0 },
+        retro: { nativeWidth: 320, nativeHeight: 280, localWidth: 240, localHeight: 200, localTop: null, localLeft: null, zoom: 1.0 }
+      }
+    };
+    localStorage.setItem('sankalp_pip_settings', JSON.stringify(settings));
+  },
+
+  loadPipSettings() {
+    const defaultDesigns = {
+      ring: { nativeWidth: 320, nativeHeight: 350, localWidth: 240, localHeight: 290, localTop: null, localLeft: null, zoom: 1.0 },
+      digital: { nativeWidth: 320, nativeHeight: 250, localWidth: 240, localHeight: 180, localTop: null, localLeft: null, zoom: 1.0 },
+      hourglass: { nativeWidth: 320, nativeHeight: 250, localWidth: 240, localHeight: 180, localTop: null, localLeft: null, zoom: 1.0 },
+      retro: { nativeWidth: 320, nativeHeight: 280, localWidth: 240, localHeight: 200, localTop: null, localLeft: null, zoom: 1.0 }
+    };
+
+    try {
+      const dataStr = localStorage.getItem('sankalp_pip_settings');
+      if (dataStr) {
+        const parsed = JSON.parse(dataStr);
+        this.clockDesign = parsed.clockDesign || 'ring';
+        this.clockColor = parsed.clockColor || 'blue';
+        this.customColorVal = parsed.customColorVal || null;
+        
+        this.pipDesigns = { ...defaultDesigns };
+        if (parsed.designs) {
+          for (const key in defaultDesigns) {
+            if (parsed.designs[key]) {
+              this.pipDesigns[key] = { ...defaultDesigns[key], ...parsed.designs[key] };
+            }
+          }
+        }
+      } else {
+        this.clockDesign = 'ring';
+        this.clockColor = 'blue';
+        this.customColorVal = null;
+        this.pipDesigns = defaultDesigns;
+      }
+    } catch (e) {
+      console.warn('Failed to load PiP settings, using defaults:', e);
+      this.clockDesign = 'ring';
+      this.clockColor = 'blue';
+      this.customColorVal = null;
+      this.pipDesigns = defaultDesigns;
+    }
+  },
+
+  getDesignSettings(design) {
+    if (!this.pipDesigns) {
+      this.loadPipSettings();
+    }
+    if (!this.pipDesigns[design]) {
+      this.pipDesigns[design] = {
+        nativeWidth: 320,
+        nativeHeight: 350,
+        localWidth: 240,
+        localHeight: 290,
+        localTop: null,
+        localLeft: null,
+        zoom: 1.0
+      };
+    }
+    return this.pipDesigns[design];
+  },
+
+  updateZoom(zoom) {
+    const currentDesign = this.clockDesign;
+    const settings = this.getDesignSettings(currentDesign);
+    settings.zoom = Math.max(0.5, Math.min(2.5, Math.round(zoom * 100) / 100));
+    
+    if (this.localPipEl) {
+      this.localPipEl.style.setProperty('--pip-zoom', settings.zoom);
+    }
+    
+    if (this.pipWindow) {
+      const pipContainer = this.pipWindow.document.querySelector('.pip-container');
+      if (pipContainer) {
+        pipContainer.style.setProperty('--pip-zoom', settings.zoom);
+      }
+    }
+    
+    this.savePipSettings();
   }
 };

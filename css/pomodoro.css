@@ -574,7 +574,8 @@
 
 /* Container-query scalable units */
 #pomodoro-local-pip .clock-container {
-  transform: none !important;
+  transform: scale(var(--pip-zoom, 1)) !important;
+  transform-origin: center !important;
   margin-top: 0px !important;
   margin-bottom: 0px !important;
   height: 80cqmin !important;
