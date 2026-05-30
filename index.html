@@ -446,10 +446,15 @@
           <!-- Timer Panel -->
           <div class="timer-panel glass-panel glow-card" id="pomodoro-clock-panel">
             
-            <!-- Fullscreen trigger button -->
-            <button id="pomodoro-fullscreen-btn" class="glass-panel" style="position: absolute; top: 1.5rem; right: 1.5rem; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: var(--glass-border); background: rgba(255,255,255,0.03);" title="Toggle Fullscreen Focus Mode">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="var(--text-secondary)" stroke-width="2.5" fill="none"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-            </button>
+            <!-- Fullscreen & PiP trigger buttons -->
+            <div style="position: absolute; top: 1.5rem; right: 1.5rem; display: flex; gap: 0.5rem;">
+              <button id="pomodoro-pip-btn" class="glass-panel" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: var(--glass-border); background: rgba(255,255,255,0.03);" title="Picture-in-Picture Clock">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="var(--text-secondary)" stroke-width="2.5" fill="none"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="13" y="11" width="7" height="7" rx="1"/></svg>
+              </button>
+              <button id="pomodoro-fullscreen-btn" class="glass-panel" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: var(--glass-border); background: rgba(255,255,255,0.03);" title="Toggle Fullscreen Focus Mode">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="var(--text-secondary)" stroke-width="2.5" fill="none"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+              </button>
+            </div>
 
             <!-- Assigned Active Task Display -->
             <div class="timer-task-display" id="timer-task-display-container" style="display: none;">
@@ -458,8 +463,14 @@
             </div>
 
             <!-- Visual Clock Circle -->
-            <div class="clock-container">
+            <div class="clock-container design-ring">
               <svg class="clock-svg" viewBox="0 0 280 280">
+                <defs>
+                  <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="var(--accent-primary)"/>
+                    <stop offset="100%" stop-color="var(--accent-secondary)"/>
+                  </linearGradient>
+                </defs>
                 <circle class="clock-bg" cx="140" cy="140" r="130"/>
                 <circle class="clock-progress" cx="140" cy="140" r="130"/>
               </svg>
@@ -467,6 +478,29 @@
                 <div class="clock-time">25:00</div>
                 <div class="clock-state-label">Focus Session</div>
               </div>
+              <div class="clock-hourglass-container" id="clock-hourglass-container" style="display: none;">
+                <div class="clock-hourglass-fill"></div>
+              </div>
+            </div>
+
+            <!-- Clock design switcher -->
+            <div class="clock-design-switcher" style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem;">
+              <span style="font-size: 0.8rem; color: var(--text-secondary); align-self: center; margin-right: 0.5rem;">Design:</span>
+              <button class="design-btn active" data-design="ring">Ring</button>
+              <button class="design-btn" data-design="digital">Glow</button>
+              <button class="design-btn" data-design="hourglass">Bar</button>
+              <button class="design-btn" data-design="retro">Retro</button>
+            </div>
+
+            <!-- Clock color switcher -->
+            <div class="clock-color-switcher" style="display: flex; gap: 0.6rem; justify-content: center; margin-bottom: 1.5rem; align-items: center;">
+              <span style="font-size: 0.8rem; color: var(--text-secondary); margin-right: 0.4rem;">Color:</span>
+              <button class="color-dot active" data-color="blue" style="background: #60a5fa; border: 2px solid var(--text-primary); width: 18px; height: 18px; border-radius: 50%; cursor: pointer; padding: 0; transition: transform var(--transition-fast); box-shadow: 0 0 10px rgba(96,165,250,0.4);" title="Ocean Blue"></button>
+              <button class="color-dot" data-color="purple" style="background: #c084fc; border: 2px solid transparent; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; padding: 0; transition: transform var(--transition-fast);" title="Soothing Lavender"></button>
+              <button class="color-dot" data-color="pink" style="background: #f472b6; border: 2px solid transparent; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; padding: 0; transition: transform var(--transition-fast);" title="Soft Rose"></button>
+              <button class="color-dot" data-color="cyan" style="background: #38bdf8; border: 2px solid transparent; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; padding: 0; transition: transform var(--transition-fast);" title="Sky Blue"></button>
+              <button class="color-dot" data-color="green" style="background: #34d399; border: 2px solid transparent; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; padding: 0; transition: transform var(--transition-fast);" title="Sage Green"></button>
+              <button class="color-dot" data-color="amber" style="background: #fbbf24; border: 2px solid transparent; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; padding: 0; transition: transform var(--transition-fast);" title="Honey Amber"></button>
             </div>
 
             <!-- Mode Switchers -->
@@ -474,6 +508,14 @@
               <button class="preset-btn active" data-mode="work">Pomodoro (25m)</button>
               <button class="preset-btn" data-mode="short">Short Break (5m)</button>
               <button class="preset-btn" data-mode="long">Long Break (15m)</button>
+              <button class="preset-btn" data-mode="custom" id="custom-timer-btn">Custom</button>
+            </div>
+
+            <!-- Custom Duration Selector (Inline) -->
+            <div id="custom-timer-inputs" style="display: none; gap: 0.5rem; align-items: center; justify-content: center; margin-bottom: 1.5rem; animation: fadeIn var(--transition-fast);">
+              <span style="font-size: 0.85rem; color: var(--text-secondary);">Minutes:</span>
+              <input type="number" id="custom-minutes-input" min="1" max="180" value="25" class="glass-panel" style="width: 70px; height: 32px; text-align: center; border: var(--glass-border); background: rgba(255,255,255,0.03); color: var(--text-primary); border-radius: var(--border-radius-sm); font-size: 0.9rem; outline: none;">
+              <button id="apply-custom-timer-btn" class="glass-btn btn-primary" style="padding: 0.3rem 1rem; font-size: 0.8rem; border-radius: var(--border-radius-sm); border: none; background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%); color: white; cursor: pointer;">Set</button>
             </div>
 
             <!-- Controls -->

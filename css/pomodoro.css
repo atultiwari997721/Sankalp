@@ -409,3 +409,280 @@
     text-align: center;
   }
 }
+
+/* Clock design switchers */
+.clock-design-switcher .design-btn {
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--border-radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.clock-design-switcher .design-btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-primary);
+}
+
+.clock-design-switcher .design-btn.active {
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+  border: none;
+  color: white;
+  box-shadow: var(--glow-shadow-indigo);
+}
+
+[data-theme="light"] .clock-design-switcher .design-btn:not(.active) {
+  background: rgba(168, 85, 247, 0.04);
+  border-color: rgba(168, 85, 247, 0.2);
+  color: #7c3aed;
+}
+
+[data-theme="light"] .clock-design-switcher .design-btn:not(.active):hover {
+  background: rgba(168, 85, 247, 0.08);
+  color: #6d28d9;
+}
+
+/* Hourglass linear bar */
+.clock-hourglass-container {
+  width: 200px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius-full);
+  margin-top: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .clock-hourglass-container {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.clock-hourglass-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+  transition: width 1s linear;
+  border-radius: var(--border-radius-full);
+}
+
+/* Clock Container Layouts per Design */
+.clock-container.design-ring .clock-svg {
+  display: block;
+}
+.clock-container.design-ring .clock-hourglass-container {
+  display: none !important;
+}
+
+/* Glow/Digital design */
+.clock-container.design-digital .clock-svg {
+  display: none;
+}
+.clock-container.design-digital .clock-hourglass-container {
+  display: none !important;
+}
+.clock-container.design-digital .clock-time {
+  font-size: 5rem;
+  color: var(--accent-primary);
+  text-shadow: 0 0 25px var(--glow-color, var(--accent-primary));
+  animation: digitalPulse 2s infinite alternate;
+}
+[data-theme="light"] .clock-container.design-digital .clock-time {
+  color: var(--accent-primary);
+  text-shadow: 0 0 20px var(--accent-primary);
+}
+
+/* Hourglass/Bar design */
+.clock-container.design-hourglass .clock-svg {
+  display: none;
+}
+.clock-container.design-hourglass {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.clock-container.design-hourglass .clock-face {
+  position: relative;
+  inset: auto;
+}
+
+/* Retro LCD Scoreboard design */
+.clock-container.design-retro .clock-svg {
+  display: none;
+}
+.clock-container.design-retro .clock-hourglass-container {
+  display: none !important;
+}
+.clock-container.design-retro .clock-time {
+  font-family: 'Courier New', Courier, monospace !important;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 0.6rem 1.8rem;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  color: var(--accent-primary);
+  text-shadow: 0 0 12px var(--accent-primary);
+  letter-spacing: 2px;
+}
+[data-theme="light"] .clock-container.design-retro .clock-time {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: var(--accent-primary);
+  text-shadow: none;
+}
+
+@keyframes digitalPulse {
+  0% {
+    text-shadow: 0 0 15px var(--glow-color, var(--accent-primary));
+  }
+  100% {
+    text-shadow: 0 0 30px var(--glow-color, var(--accent-primary));
+  }
+}
+
+/* Custom timer input focus */
+#custom-minutes-input:focus {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.2);
+}
+
+/* Floating Local overlay styles */
+#pomodoro-local-pip {
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-radius: var(--border-radius-md);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: opacity 0.3s ease;
+  animation: floatIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  container-type: size; /* Enable container query relative units! */
+  resize: both; /* Allow resizing overlay clock! */
+  overflow: hidden;
+  min-width: 140px;
+  min-height: 180px;
+  max-width: 400px;
+  max-height: 450px;
+}
+
+#pomodoro-local-pip:active {
+  cursor: grabbing;
+}
+
+/* Container-query scalable units */
+#pomodoro-local-pip .clock-container {
+  transform: none !important;
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+  height: 80cqmin !important;
+  width: 80cqmin !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+}
+
+#pomodoro-local-pip .clock-container.design-hourglass {
+  width: 90cqw !important;
+  height: 80cqh !important;
+}
+
+#pomodoro-local-pip .clock-time {
+  font-size: 20cqmin !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+}
+
+#pomodoro-local-pip .clock-container.design-digital .clock-time {
+  font-size: 25cqmin !important;
+}
+
+#pomodoro-local-pip .clock-container.design-retro .clock-time {
+  font-size: 15cqmin !important;
+  padding: 1.5cqmin 4cqmin !important;
+}
+
+#pomodoro-local-pip .clock-state-label {
+  font-size: 3.5cqmin !important;
+}
+
+#pomodoro-local-pip .pip-controls {
+  gap: 4cqw !important;
+  margin-top: 1.5cqh !important;
+}
+
+#pomodoro-local-pip .control-btn {
+  width: 12cqmin !important;
+  height: 12cqmin !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+#pomodoro-local-pip .control-btn svg {
+  width: 5cqmin !important;
+  height: 5cqmin !important;
+}
+
+#pomodoro-local-pip .local-pip-header span {
+  font-size: 3cqmin !important;
+}
+
+#pomodoro-local-pip #close-local-pip svg {
+  width: 5cqmin !important;
+  height: 5cqmin !important;
+}
+
+#pomodoro-local-pip .clock-hourglass-container {
+  width: 45cqmin !important;
+  height: 2.5cqh !important;
+  margin-top: 2cqh !important;
+}
+
+#pomodoro-local-pip .local-pip-header,
+#pomodoro-local-pip .pip-controls,
+#pomodoro-local-pip .clock-state-label {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+}
+
+#pomodoro-local-pip .local-pip-header {
+  transform: translateY(-8px);
+}
+#pomodoro-local-pip .pip-controls {
+  transform: translateY(8px);
+}
+
+#pomodoro-local-pip:hover .local-pip-header,
+#pomodoro-local-pip:hover .pip-controls,
+#pomodoro-local-pip:hover .clock-state-label {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* Adjust local pip clock scale on hover to prevent overlaps */
+#pomodoro-local-pip .clock-time {
+  transition: transform 0.25s ease-in-out;
+}
+#pomodoro-local-pip:hover .clock-time {
+  transform: translateY(-8px);
+}
+#pomodoro-local-pip:hover .clock-state-label {
+  transform: translateY(-4px);
+}
+
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

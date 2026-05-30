@@ -8,6 +8,12 @@ window.SankalpTimer = {
   timerMode: 'work', // work, shortBreak, longBreak
   activeTask: null,
   
+  // PiP & Clock Designs State
+  pipWindow: null,
+  localPipEl: null,
+  clockDesign: 'ring',
+  clockColor: 'blue',
+  
   // Audio Synthesizer variables
   audioCtx: null,
   activeSound: null, // rain, lofi, zen, null
@@ -39,6 +45,7 @@ window.SankalpTimer = {
 
     // Mode Presets
     const presetBtns = document.querySelectorAll('.timer-presets .preset-btn');
+    const customTimerInputs = document.getElementById('custom-timer-inputs');
     presetBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         presetBtns.forEach(b => b.classList.remove('active'));
@@ -47,11 +54,67 @@ window.SankalpTimer = {
         const mode = btn.getAttribute('data-mode');
         this.timerMode = mode;
 
-        if (mode === 'work') this.duration = 25 * 60;
-        else if (mode === 'short') this.duration = 5 * 60;
-        else if (mode === 'long') this.duration = 15 * 60;
+        if (mode === 'work') {
+          this.duration = 25 * 60;
+          if (customTimerInputs) customTimerInputs.style.display = 'none';
+          this.resetTimer();
+        } else if (mode === 'short') {
+          this.duration = 5 * 60;
+          if (customTimerInputs) customTimerInputs.style.display = 'none';
+          this.resetTimer();
+        } else if (mode === 'long') {
+          this.duration = 15 * 60;
+          if (customTimerInputs) customTimerInputs.style.display = 'none';
+          this.resetTimer();
+        } else if (mode === 'custom') {
+          if (customTimerInputs) customTimerInputs.style.display = 'flex';
+          const minsInput = document.getElementById('custom-minutes-input');
+          if (minsInput) {
+            minsInput.value = Math.ceil(this.duration / 60);
+          }
+        }
+      });
+    });
 
-        this.resetTimer();
+    // Custom Apply Button
+    const applyCustomBtn = document.getElementById('apply-custom-timer-btn');
+    if (applyCustomBtn) {
+      applyCustomBtn.addEventListener('click', () => {
+        const minsInput = document.getElementById('custom-minutes-input');
+        if (minsInput) {
+          const val = parseInt(minsInput.value, 10);
+          if (isNaN(val) || val < 1 || val > 180) {
+            window.Sankalp.showToast('⚠️ Please enter a duration between 1 and 180 minutes', 'warning');
+            return;
+          }
+          this.duration = val * 60;
+          this.resetTimer();
+          window.Sankalp.showToast(`⏱️ Duration set to ${val} minutes`, 'success');
+        }
+      });
+    }
+
+    // PiP Button Click
+    const pipBtn = document.getElementById('pomodoro-pip-btn');
+    if (pipBtn) {
+      pipBtn.addEventListener('click', () => this.togglePiP());
+    }
+
+    // Design Switcher Buttons
+    const designBtns = document.querySelectorAll('.clock-design-switcher .design-btn');
+    designBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        designBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.setClockDesign(btn.getAttribute('data-design'));
+      });
+    });
+
+    // Color Switcher Buttons
+    const colorDots = document.querySelectorAll('.clock-color-switcher .color-dot');
+    colorDots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        this.setClockColor(dot.getAttribute('data-color'));
       });
     });
 
@@ -157,19 +220,21 @@ window.SankalpTimer = {
     this.pauseTimer();
     window.Sankalp.showToast('⏭️ Session skipped', 'info');
     
+    const customTimerInputs = document.getElementById('custom-timer-inputs');
+    if (customTimerInputs) customTimerInputs.style.display = 'none';
+
     // Cycle through modes
     const presets = document.querySelectorAll('.timer-presets .preset-btn');
-    if (this.timerMode === 'work') {
+    presets.forEach(b => b.classList.remove('active'));
+
+    if (this.timerMode === 'work' || this.timerMode === 'custom') {
       this.timerMode = 'short';
       this.duration = 5 * 60;
-      presets[0].classList.remove('active');
-      presets[1].classList.add('active');
+      if (presets[1]) presets[1].classList.add('active');
     } else {
       this.timerMode = 'work';
       this.duration = 25 * 60;
-      presets[1].classList.remove('active');
-      presets[2].classList.remove('active');
-      presets[0].classList.add('active');
+      if (presets[0]) presets[0].classList.add('active');
     }
     
     this.resetTimer();
@@ -179,7 +244,10 @@ window.SankalpTimer = {
     this.pauseTimer();
     this.triggerCompletedSound();
 
-    if (this.timerMode === 'work') {
+    const customTimerInputs = document.getElementById('custom-timer-inputs');
+    if (customTimerInputs) customTimerInputs.style.display = 'none';
+
+    if (this.timerMode === 'work' || this.timerMode === 'custom') {
       window.Sankalp.state.user.focusMinutes += Math.round(this.duration / 60);
       window.Sankalp.saveState();
       
@@ -194,7 +262,7 @@ window.SankalpTimer = {
       
       const presets = document.querySelectorAll('.timer-presets .preset-btn');
       presets.forEach(b => b.classList.remove('active'));
-      presets[1].classList.add('active');
+      if (presets[1]) presets[1].classList.add('active');
     } else {
       window.Sankalp.showToast('💪 Break over! Let\'s get back to focus.', 'info');
       this.timerMode = 'work';
@@ -202,7 +270,7 @@ window.SankalpTimer = {
       
       const presets = document.querySelectorAll('.timer-presets .preset-btn');
       presets.forEach(b => b.classList.remove('active'));
-      presets[0].classList.add('active');
+      if (presets[0]) presets[0].classList.add('active');
     }
 
     this.resetTimer();
@@ -212,41 +280,102 @@ window.SankalpTimer = {
     const mins = Math.floor(this.timeLeft / 60);
     const secs = this.timeLeft % 60;
     const formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const progressPercent = ((this.duration - this.timeLeft) / this.duration) * 100;
     
+    // Update main clock text
     const clockFace = document.querySelector('.clock-time');
     if (clockFace) clockFace.textContent = formatted;
 
+    // Update main progress circle
     const progressRing = document.querySelector('.clock-progress');
     if (progressRing) {
       const offset = 816 - (816 * this.timeLeft) / this.duration;
       progressRing.style.strokeDashoffset = offset;
     }
 
+    // Update main hourglass bar
+    const hourglassFill = document.querySelector('.clock-hourglass-fill');
+    if (hourglassFill) {
+      hourglassFill.style.width = `${progressPercent}%`;
+    }
+
     document.title = this.isRunning ? `(${formatted}) Sankalp` : 'Sankalp';
 
+    let stateText = 'Focus Session';
+    if (this.timerMode === 'work') stateText = 'Focus Session';
+    else if (this.timerMode === 'short') stateText = 'Short Break';
+    else if (this.timerMode === 'long') stateText = 'Long Break';
+    else if (this.timerMode === 'custom') stateText = 'Custom Session';
+
     const label = document.querySelector('.clock-state-label');
-    if (label) {
-      if (this.timerMode === 'work') label.textContent = 'Focus Session';
-      else if (this.timerMode === 'short') label.textContent = 'Short Break';
-      else if (this.timerMode === 'long') label.textContent = 'Long Break';
+    if (label) label.textContent = stateText;
+
+    // Update native PiP window clock if open
+    if (this.pipWindow) {
+      const pipDoc = this.pipWindow.document;
+      const pipTime = pipDoc.querySelector('.clock-time');
+      if (pipTime) pipTime.textContent = formatted;
+      
+      const pipProgress = pipDoc.querySelector('.clock-progress');
+      if (pipProgress) {
+        const offset = 816 - (816 * this.timeLeft) / this.duration;
+        pipProgress.style.strokeDashoffset = offset;
+      }
+      
+      const pipHourglassFill = pipDoc.querySelector('.clock-hourglass-fill');
+      if (pipHourglassFill) {
+        pipHourglassFill.style.width = `${progressPercent}%`;
+      }
+      
+      const pipLabel = pipDoc.querySelector('.clock-state-label');
+      if (pipLabel) pipLabel.textContent = stateText;
+    }
+
+    // Update local floating overlay PiP if open
+    if (this.localPipEl) {
+      const localTime = this.localPipEl.querySelector('.clock-time');
+      if (localTime) localTime.textContent = formatted;
+
+      const localProgress = this.localPipEl.querySelector('.clock-progress');
+      if (localProgress) {
+        const offset = 816 - (816 * this.timeLeft) / this.duration;
+        localProgress.style.strokeDashoffset = offset;
+      }
+
+      const localHourglassFill = this.localPipEl.querySelector('.clock-hourglass-fill');
+      if (localHourglassFill) {
+        localHourglassFill.style.width = `${progressPercent}%`;
+      }
+
+      const localLabel = this.localPipEl.querySelector('.clock-state-label');
+      if (localLabel) localLabel.textContent = stateText;
     }
   },
 
   updateControlsUI() {
     const playPauseBtn = document.getElementById('play-pause-timer-btn');
-    if (!playPauseBtn) return;
+    
+    const playSVG = `<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>`;
+    const pauseSVG = `<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" fill="currentColor"/><rect x="14" y="4" width="4" height="16" fill="currentColor"/></svg>`;
 
-    if (this.isRunning) {
-      playPauseBtn.innerHTML = `
-        <svg viewBox="0 0 24 24">
-          <rect x="6" y="4" width="4" height="16" fill="white" />
-          <rect x="14" y="4" width="4" height="16" fill="white" />
-        </svg>
-      `;
-    } else {
-      playPauseBtn.innerHTML = `
-        <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="white"/></svg>
-      `;
+    if (playPauseBtn) {
+      playPauseBtn.innerHTML = this.isRunning ? 
+        `<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" fill="white" /><rect x="14" y="4" width="4" height="16" fill="white" /></svg>` : 
+        `<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="white"/></svg>`;
+    }
+
+    if (this.pipWindow) {
+      const pipPlayBtn = this.pipWindow.document.getElementById('pip-play-pause');
+      if (pipPlayBtn) {
+        pipPlayBtn.innerHTML = this.isRunning ? pauseSVG : playSVG;
+      }
+    }
+
+    if (this.localPipEl) {
+      const localPlayBtn = this.localPipEl.querySelector('#local-pip-play-pause');
+      if (localPlayBtn) {
+        localPlayBtn.innerHTML = this.isRunning ? pauseSVG : playSVG;
+      }
     }
   },
 
@@ -583,5 +712,510 @@ window.SankalpTimer = {
 
     osc.start();
     osc.stop(ctx.currentTime + 1.3);
+  },
+
+  setClockDesign(design) {
+    this.clockDesign = design;
+    const clockContainers = document.querySelectorAll('.clock-container');
+    clockContainers.forEach(container => {
+      container.className = `clock-container design-${design}`;
+    });
+    
+    const hourglass = document.getElementById('clock-hourglass-container');
+    if (hourglass) {
+      hourglass.style.display = (design === 'hourglass') ? 'block' : 'none';
+    }
+
+    if (this.localPipEl) {
+      const pipClock = this.localPipEl.querySelector('.clock-container');
+      if (pipClock) {
+        pipClock.className = `clock-container design-${design}`;
+        const pipHourglass = pipClock.querySelector('.clock-hourglass-container');
+        if (pipHourglass) {
+          pipHourglass.style.display = (design === 'hourglass') ? 'block' : 'none';
+        }
+      }
+    }
+
+    if (this.pipWindow) {
+      const pipClock = this.pipWindow.document.querySelector('.clock-container');
+      if (pipClock) {
+        pipClock.className = `clock-container design-${design}`;
+        const pipHourglass = pipClock.querySelector('.clock-hourglass-container');
+        if (pipHourglass) {
+          pipHourglass.style.display = (design === 'hourglass') ? 'block' : 'none';
+        }
+      }
+    }
+
+    this.updateClockUI();
+  },
+
+  async togglePiP() {
+    if (this.pipWindow) {
+      this.pipWindow.close();
+      this.pipWindow = null;
+      return;
+    }
+
+    if (this.localPipEl) {
+      this.toggleLocalOverlayPiP();
+    }
+
+    if ('documentPictureInPicture' in window) {
+      try {
+        const pipWindow = await window.documentPictureInPicture.requestWindow({
+          width: 320,
+          height: 350,
+        });
+        this.pipWindow = pipWindow;
+
+        // Clone style sheets
+        [...document.styleSheets].forEach((styleSheet) => {
+          try {
+            if (styleSheet.cssRules) {
+              const newStyle = pipWindow.document.createElement('style');
+              [...styleSheet.cssRules].forEach((rule) => {
+                newStyle.appendChild(pipWindow.document.createTextNode(rule.cssText));
+              });
+              pipWindow.document.head.appendChild(newStyle);
+            } else if (styleSheet.href) {
+              const newLink = pipWindow.document.createElement('link');
+              newLink.rel = 'stylesheet';
+              newLink.href = styleSheet.href;
+              pipWindow.document.head.appendChild(newLink);
+            }
+          } catch (e) {
+            if (styleSheet.href) {
+              const newLink = pipWindow.document.createElement('link');
+              newLink.rel = 'stylesheet';
+              newLink.href = styleSheet.href;
+              pipWindow.document.head.appendChild(newLink);
+            }
+          }
+        });
+
+        // Add pip-specific custom styles
+        const pipStyle = pipWindow.document.createElement('style');
+        pipStyle.textContent = `
+          body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: ${window.Sankalp.state?.theme === 'light' ? '#edf1f3' : '#060912'} !important;
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            color: ${window.Sankalp.state?.theme === 'light' ? '#1e293b' : '#f8fafc'};
+          }
+          .pip-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            height: 100vh;
+            padding: 2vmin;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+          }
+          .pip-container .clock-container {
+            transform: none !important;
+            margin-bottom: 0px !important;
+            height: 80vmin !important;
+            width: 80vmin !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            position: relative !important;
+          }
+          .pip-container .clock-container.design-hourglass {
+            width: 90vw !important;
+            height: 80vh !important;
+          }
+          .pip-container .clock-face {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+          .pip-container .clock-time {
+            font-size: 20vmin !important;
+            font-weight: 800 !important;
+            line-height: 1 !important;
+            transition: transform 0.25s ease-in-out !important;
+          }
+          .pip-container .clock-container.design-digital .clock-time {
+            font-size: 24vmin !important;
+          }
+          .pip-container .clock-container.design-retro .clock-time {
+            font-size: 14vmin !important;
+            padding: 1.5vmin 4vmin !important;
+          }
+          .pip-container:hover .clock-time {
+            transform: translateY(-2.5vmin) !important;
+          }
+          .pip-container .clock-state-label {
+            font-size: 3.5vmin !important;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+            margin-top: 1vmin;
+          }
+          .pip-container:hover .clock-state-label {
+            opacity: 1;
+            transform: translateY(-1vmin);
+          }
+          .pip-controls {
+            display: flex;
+            gap: 4vw;
+            margin-top: 1.5vmin;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+            transform: translateY(2vmin);
+          }
+          .pip-container:hover .pip-controls {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+          }
+          .pip-btn {
+            width: 11vmin;
+            height: 11vmin;
+            max-width: 44px;
+            max-height: 44px;
+            min-width: 24px;
+            min-height: 24px;
+            border-radius: 50%;
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7c3aed;
+            transition: all 0.2s ease;
+          }
+          [data-theme="dark"] .pip-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+          }
+          .pip-btn:hover {
+            transform: scale(1.05);
+            background: rgba(168, 85, 247, 0.2);
+          }
+          [data-theme="dark"] .pip-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+          }
+          .pip-btn svg {
+            width: 5vmin;
+            height: 5vmin;
+            max-width: 18px;
+            max-height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+          }
+          .pip-container .clock-hourglass-container {
+            width: 45vmin !important;
+            height: 2vmin !important;
+            max-height: 8px !important;
+            background: rgba(255,255,255,0.05) !important;
+            border-radius: 999px !important;
+            margin-top: 1.5vmin !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+          }
+        `;
+        pipWindow.document.head.appendChild(pipStyle);
+        pipWindow.document.body.setAttribute('data-theme', window.Sankalp.state?.theme || 'dark');
+
+        const pipContainer = pipWindow.document.createElement('div');
+        pipContainer.className = 'pip-container';
+        pipContainer.innerHTML = `
+          <div class="clock-container design-${this.clockDesign}">
+            <svg class="clock-svg" viewBox="0 0 280 280">
+              <defs>
+                <linearGradient id="timer-gradient-pip" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="var(--accent-primary, #60a5fa)"/>
+                  <stop offset="100%" stop-color="var(--accent-secondary, #c084fc)"/>
+                </linearGradient>
+              </defs>
+              <circle class="clock-bg" cx="140" cy="140" r="130" stroke="rgba(255,255,255,0.03)" stroke-width="8" fill="none"/>
+              <circle class="clock-progress" cx="140" cy="140" r="130" stroke="url(#timer-gradient-pip)" stroke-width="8" stroke-dasharray="816" stroke-dashoffset="816" stroke-linecap="round" fill="none"/>
+            </svg>
+            <div class="clock-face">
+              <div class="clock-time">25:00</div>
+              <div class="clock-state-label">Focus Session</div>
+            </div>
+            <div class="clock-hourglass-container" style="display: ${this.clockDesign === 'hourglass' ? 'block' : 'none'};">
+              <div class="clock-hourglass-fill"></div>
+            </div>
+          </div>
+          <div class="pip-controls">
+            <button class="pip-btn" id="pip-play-pause" title="Play/Pause"></button>
+            <button class="pip-btn" id="pip-reset" title="Reset">
+              <svg viewBox="0 0 24 24"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2L2.5 8m0 8l.7.8A10 10 0 0 0 20.8 16.8l.7-.8"/></svg>
+            </button>
+          </div>
+        `;
+
+        pipWindow.document.body.appendChild(pipContainer);
+
+        pipContainer.querySelector('#pip-play-pause').addEventListener('click', () => this.toggleTimer());
+        pipContainer.querySelector('#pip-reset').addEventListener('click', () => this.resetTimer());
+
+        this.updateClockUI();
+        this.updateControlsUI();
+        this.setClockColor(this.clockColor);
+
+        pipWindow.addEventListener('pagehide', () => {
+          this.pipWindow = null;
+        });
+
+      } catch (err) {
+        console.warn('Native Document PiP failed, using local overlay fallback:', err);
+        this.toggleLocalOverlayPiP();
+      }
+    } else {
+      this.toggleLocalOverlayPiP();
+    }
+  },
+
+  toggleLocalOverlayPiP() {
+    if (this.localPipEl) {
+      this.localPipEl.remove();
+      this.localPipEl = null;
+      return;
+    }
+
+    if (this.pipWindow) {
+      this.pipWindow.close();
+      this.pipWindow = null;
+    }
+
+    const pipContainer = document.createElement('div');
+    pipContainer.id = 'pomodoro-local-pip';
+    pipContainer.className = 'glass-panel glow-card';
+    
+    pipContainer.style.position = 'fixed';
+    pipContainer.style.bottom = '2rem';
+    pipContainer.style.right = '2rem';
+    pipContainer.style.width = '240px';
+    pipContainer.style.height = '290px';
+    pipContainer.style.zIndex = '99999';
+    pipContainer.style.display = 'flex';
+    pipContainer.style.flexDirection = 'column';
+    pipContainer.style.alignItems = 'center';
+    pipContainer.style.justifyContent = 'center';
+    pipContainer.style.padding = '1rem';
+    pipContainer.style.cursor = 'grab';
+    pipContainer.style.userSelect = 'none';
+
+    pipContainer.innerHTML = `
+      <div class="local-pip-header" style="position: absolute; top: 0.5rem; left: 0.5rem; right: 0.5rem; display: flex; justify-content: space-between; align-items: center; cursor: move; width: calc(100% - 1rem); padding-bottom: 0.25rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; letter-spacing: 1px;">FOCUS OVERLAY</span>
+        <button id="close-local-pip" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); padding: 2px;">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="clock-container design-${this.clockDesign}" style="transform: scale(0.68); margin-top: 1rem; margin-bottom: 0px; height: 200px; width: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <svg class="clock-svg" viewBox="0 0 280 280">
+          <circle class="clock-bg" cx="140" cy="140" r="130" />
+          <circle class="clock-progress" cx="140" cy="140" r="130" stroke="url(#timer-gradient)" />
+        </svg>
+        <div class="clock-face" style="top:0; left:0; width:100%; height:100%;">
+          <div class="clock-time">25:00</div>
+          <div class="clock-state-label">Focus Session</div>
+        </div>
+        <div class="clock-hourglass-container" style="display: ${this.clockDesign === 'hourglass' ? 'block' : 'none'};">
+          <div class="clock-hourglass-fill"></div>
+        </div>
+      </div>
+
+      <div class="pip-controls" style="display: flex; gap: 1rem; margin-top: 0.2rem; z-index: 10;">
+        <button class="control-btn" id="local-pip-play-pause" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); color: #7c3aed; cursor: pointer;"></button>
+        <button class="control-btn" id="local-pip-reset" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: var(--glass-border); cursor: pointer;">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="var(--text-primary)" stroke-width="2" fill="none"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2L2.5 8m0 8l.7.8A10 10 0 0 0 20.8 16.8l.7-.8"/></svg>
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(pipContainer);
+    this.localPipEl = pipContainer;
+
+    this.dragElement(pipContainer);
+
+    pipContainer.querySelector('#close-local-pip').addEventListener('click', () => {
+      this.toggleLocalOverlayPiP();
+    });
+
+    pipContainer.querySelector('#local-pip-play-pause').addEventListener('click', () => this.toggleTimer());
+    pipContainer.querySelector('#local-pip-reset').addEventListener('click', () => this.resetTimer());
+
+    this.updateClockUI();
+    this.updateControlsUI();
+    this.setClockColor(this.clockColor);
+  },
+
+  dragElement(elmnt) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    const header = elmnt.querySelector('.local-pip-header') || elmnt;
+    
+    header.onmousedown = dragMouseDown;
+    header.ontouchstart = dragTouchStart;
+
+    function dragMouseDown(e) {
+      e = e || window.event;
+      e.preventDefault();
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      document.onmousemove = elementDrag;
+      elmnt.style.cursor = 'grabbing';
+    }
+
+    function elementDrag(e) {
+      e = e || window.event;
+      e.preventDefault();
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      
+      let newTop = elmnt.offsetTop - pos2;
+      let newLeft = elmnt.offsetLeft - pos1;
+      
+      const maxLeft = window.innerWidth - elmnt.offsetWidth;
+      const maxTop = window.innerHeight - elmnt.offsetHeight;
+      
+      if (newLeft < 0) newLeft = 0;
+      if (newLeft > maxLeft) newLeft = maxLeft;
+      if (newTop < 0) newTop = 0;
+      if (newTop > maxTop) newTop = maxTop;
+      
+      elmnt.style.top = newTop + "px";
+      elmnt.style.left = newLeft + "px";
+      elmnt.style.bottom = "auto";
+      elmnt.style.right = "auto";
+    }
+
+    function closeDragElement() {
+      document.onmouseup = null;
+      document.onmousemove = null;
+      elmnt.style.cursor = 'grab';
+    }
+
+    function dragTouchStart(e) {
+      const touch = e.touches[0];
+      pos3 = touch.clientX;
+      pos4 = touch.clientY;
+      document.ontouchend = closeDragTouch;
+      document.ontouchmove = elementTouchDrag;
+    }
+
+    function elementTouchDrag(e) {
+      const touch = e.touches[0];
+      pos1 = pos3 - touch.clientX;
+      pos2 = pos4 - touch.clientY;
+      pos3 = touch.clientX;
+      pos4 = touch.clientY;
+
+      let newTop = elmnt.offsetTop - pos2;
+      let newLeft = elmnt.offsetLeft - pos1;
+
+      const maxLeft = window.innerWidth - elmnt.offsetWidth;
+      const maxTop = window.innerHeight - elmnt.offsetHeight;
+
+      if (newLeft < 0) newLeft = 0;
+      if (newLeft > maxLeft) newLeft = maxLeft;
+      if (newTop < 0) newTop = 0;
+      if (newTop > maxTop) newTop = maxTop;
+
+      elmnt.style.top = newTop + "px";
+      elmnt.style.left = newLeft + "px";
+      elmnt.style.bottom = "auto";
+      elmnt.style.right = "auto";
+    }
+
+    function closeDragTouch() {
+      document.ontouchend = null;
+      document.ontouchmove = null;
+    }
+  },
+
+  setClockColor(colorName) {
+    this.clockColor = colorName;
+    
+    const colorMapping = {
+      blue: { primary: '#60a5fa', secondary: '#a5f3fc' },
+      purple: { primary: '#c084fc', secondary: '#f472b6' },
+      pink: { primary: '#f472b6', secondary: '#fbcfe8' },
+      cyan: { primary: '#38bdf8', secondary: '#99f6e4' },
+      green: { primary: '#34d399', secondary: '#a7f3d0' },
+      amber: { primary: '#fbbf24', secondary: '#fde68a' }
+    };
+    
+    const colors = colorMapping[colorName] || colorMapping.blue;
+
+    // Apply active class & styles to color switcher dots
+    const dots = document.querySelectorAll('.clock-color-switcher .color-dot');
+    dots.forEach(dot => {
+      const dotColor = dot.getAttribute('data-color');
+      if (dotColor === colorName) {
+        dot.style.borderColor = 'var(--text-primary)';
+        dot.classList.add('active');
+        dot.style.boxShadow = `0 0 10px ${colors.primary}`;
+      } else {
+        dot.style.borderColor = 'transparent';
+        dot.classList.remove('active');
+        dot.style.boxShadow = 'none';
+      }
+    });
+
+    // Apply colors to the main Clock Container
+    const clockContainers = document.querySelectorAll('.clock-container');
+    clockContainers.forEach(container => {
+      container.style.setProperty('--accent-primary', colors.primary);
+      container.style.setProperty('--accent-secondary', colors.secondary);
+      container.style.setProperty('--glow-color', colors.primary);
+    });
+
+    // Apply colors to the local PiP overlay
+    if (this.localPipEl) {
+      const pipClock = this.localPipEl.querySelector('.clock-container');
+      if (pipClock) {
+        pipClock.style.setProperty('--accent-primary', colors.primary);
+        pipClock.style.setProperty('--accent-secondary', colors.secondary);
+        pipClock.style.setProperty('--glow-color', colors.primary);
+      }
+    }
+
+    // Apply colors to the native PiP window
+    if (this.pipWindow) {
+      const pipClock = this.pipWindow.document.querySelector('.clock-container');
+      if (pipClock) {
+        pipClock.style.setProperty('--accent-primary', colors.primary);
+        pipClock.style.setProperty('--accent-secondary', colors.secondary);
+        pipClock.style.setProperty('--glow-color', colors.primary);
+      }
+      
+      const stops = this.pipWindow.document.querySelectorAll('#timer-gradient-pip stop');
+      if (stops.length >= 2) {
+        stops[0].setAttribute('stop-color', colors.primary);
+        stops[1].setAttribute('stop-color', colors.secondary);
+      }
+    }
   }
 };
