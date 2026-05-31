@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="css/zen.css">
   <link rel="stylesheet" href="css/study.css">
   <link rel="stylesheet" href="css/saarthi.css">
+  <link rel="stylesheet" href="css/calendar.css">
   <link rel="icon" type="image/png" href="img.png" sizes="32x32">
 </head>
 <body>
@@ -252,6 +253,51 @@
             <div class="affirmation-container" style="width: 100%; margin: 0;">
               <div class="affirmation-heading">Today's Affirmation</div>
               <p class="affirmation-text">Sankalp is your determination. Stand firm in your purpose today.</p>
+            </div>
+          </div>
+
+          <!-- ==================== CALENDAR SECTION ==================== -->
+          <div class="calendar-card glass-panel glow-card span-12" id="dashboard-calendar-card">
+            <div class="calendar-header-row">
+              <div class="calendar-title-group">
+                <h3 class="calendar-section-title">Productivity & Study Calendar</h3>
+                <span class="calendar-section-subtitle">Manage exams, meetings, deadlines, and view holidays.</span>
+              </div>
+              <div class="calendar-controls">
+                <button class="glass-btn btn-nav" id="calendar-prev-month-btn" title="Previous Month">
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <h4 class="calendar-current-month" id="calendar-month-year-display">June 2026</h4>
+                <button class="glass-btn btn-nav" id="calendar-next-month-btn" title="Next Month">
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                
+                <div class="calendar-options">
+                  <label class="calendar-checkbox-label">
+                    <input type="checkbox" id="calendar-toggle-holidays" checked>
+                    <span>Holidays</span>
+                  </label>
+                </div>
+                
+                <button class="glass-btn btn-primary" id="calendar-add-event-btn">
+                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="white" stroke-width="3" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add Event
+                </button>
+              </div>
+            </div>
+            
+            <div class="calendar-grid-container">
+              <div class="calendar-weekdays">
+                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+              </div>
+              <div class="calendar-days" id="calendar-days-grid">
+                <!-- Days will be rendered here -->
+              </div>
+            </div>
+            
+            <!-- Dynamic Selected Day Details panel -->
+            <div class="calendar-day-details" id="calendar-day-details-panel">
+              <!-- Selected day's events, tasks, study plans will render here -->
             </div>
           </div>
 
@@ -890,6 +936,59 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL: ADD CALENDAR EVENT ==================== -->
+  <div class="modal-backdrop" id="calendar-event-modal">
+    <div class="modal-container glass-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.4rem;" id="calendar-modal-title">New Calendar Event</h2>
+        <button id="close-calendar-modal" style="background:none; border:none; color:var(--text-secondary); font-size: 1.5rem; cursor:pointer;">&times;</button>
+      </div>
+
+      <form id="calendar-event-form">
+        <input type="hidden" id="calendar-event-id">
+        <div class="task-form-group">
+          <label class="task-form-label" for="calendar-event-title">Event Title</label>
+          <input type="text" id="calendar-event-title" class="glass-input" placeholder="e.g., Mathematics Midterm, Project Presentation" required>
+        </div>
+
+        <div class="task-form-row">
+          <div class="task-form-group">
+            <label class="task-form-label" for="calendar-event-date">Date</label>
+            <input type="date" id="calendar-event-date" class="glass-input" style="color: var(--text-primary);" required>
+          </div>
+
+          <div class="task-form-group">
+            <label class="task-form-label" for="calendar-event-time">Time (Optional)</label>
+            <input type="time" id="calendar-event-time" class="glass-input" style="color: var(--text-primary);">
+          </div>
+        </div>
+
+        <div class="task-form-row">
+          <div class="task-form-group">
+            <label class="task-form-label" for="calendar-event-type">Event Type</label>
+            <select id="calendar-event-type" class="glass-input" style="color: var(--text-primary);">
+              <option value="exam" style="background-color: #0c0b20;">📝 Exam / Test</option>
+              <option value="meeting" style="background-color: #0c0b20;">👥 Meeting / Call</option>
+              <option value="holiday" style="background-color: #0c0b20;">🎉 Holiday / Break</option>
+              <option value="personal" style="background-color: #0c0b20;">👤 Personal Event</option>
+              <option value="other" style="background-color: #0c0b20;">✨ Other Deadline</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="task-form-group">
+          <label class="task-form-label" for="calendar-event-desc">Description / Notes</label>
+          <input type="text" id="calendar-event-desc" class="glass-input" placeholder="Add details, room numbers, Zoom links...">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="glass-btn" id="cancel-calendar-btn">Cancel</button>
+          <button type="submit" class="glass-btn btn-primary" id="save-calendar-event-btn">Save Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- JavaScript Files -->
   <script src="js/auth.js"></script>
   <script src="js/tasks.js"></script>
@@ -899,6 +998,7 @@
   <script src="js/zen.js"></script>
   <script src="js/study.js"></script>
   <script src="js/saarthi.js"></script>
+  <script src="js/calendar.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

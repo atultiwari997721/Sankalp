@@ -54,7 +54,8 @@ window.Sankalp = {
       tasks: [],
       habits: [],
       journal: {},
-      studyPlans: []
+      studyPlans: [],
+      calendarEvents: []
     };
   },
 
@@ -84,6 +85,7 @@ window.Sankalp = {
     if (window.SankalpZen) window.SankalpZen.init();
     if (window.SankalpStudy) window.SankalpStudy.init();
     if (window.SankalpSaarthi) window.SankalpSaarthi.init();
+    if (window.SankalpCalendar) window.SankalpCalendar.init();
 
     // 7. Initialize Auth state
     if (window.SankalpAuth) window.SankalpAuth.init();
@@ -352,6 +354,11 @@ window.Sankalp = {
     // Render Study plans summary widget
     if (window.SankalpStudy) {
       window.SankalpStudy.renderDashboardSummary();
+    }
+
+    // Render Calendar widget
+    if (window.SankalpCalendar) {
+      window.SankalpCalendar.render();
     }
 
     // Today's summary list

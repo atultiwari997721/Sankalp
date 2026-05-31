@@ -202,7 +202,8 @@ function getNewUserState(username) {
       }
     ],
     journal: {},
-    studyPlans: [] // Added for Study Planner!
+    studyPlans: [], // Added for Study Planner!
+    calendarEvents: [] // Added for calendar feature!
   };
 }
 
